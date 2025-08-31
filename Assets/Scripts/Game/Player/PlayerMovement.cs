@@ -4,14 +4,10 @@ public class PlayerMovement : MonoBehaviour, IMovable
 {
     [SerializeField] private float _stepDistance = 1f;
     [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _collisionCheckDistance = 0.9f;
 
     private Vector3 _targetPosition;
     private bool _isMoving = false;
-
-    private void Awake()
-    {
-        _targetPosition = transform.position;
-    }
 
     private void Update()
     {
@@ -27,33 +23,21 @@ public class PlayerMovement : MonoBehaviour, IMovable
         }
     }
 
-    public void MoveStraight()
-    {
-        if (!_isMoving)
-            StartMove(Vector3.forward);
-    }
+    public void MoveStraight() => TryMove(Vector3.forward);
+    public void MoveLeft() => TryMove(Vector3.left);
+    public void MoveRight() => TryMove(Vector3.right);
+    public void MoveBack() => TryMove(Vector3.back);
 
-    public void MoveLeft()
+    private void TryMove(Vector3 direction)
     {
-        if (!_isMoving)
-            StartMove(Vector3.left);
-    }
+        float halfHeight = 0.5f;
+        float halfWidth = 0.5f;
+        Vector3 center = transform.position + Vector3.up * halfHeight;
 
-    public void MoveRight()
-    {
-        if (!_isMoving)
-            StartMove(Vector3.right);
-    }
-
-    public void MoveBack()
-    {
-        if (!_isMoving)
-            StartMove(Vector3.back);
-    }
-
-    private void StartMove(Vector3 direction)
-    {
-        _targetPosition = transform.position + direction * _stepDistance;
-        _isMoving = true;
+        if (!_isMoving && !Physics.BoxCast(center, new Vector3(halfWidth, halfHeight, halfWidth), direction, out _, Quaternion.identity, _stepDistance))
+        {
+            _targetPosition = transform.position + direction * _stepDistance;
+            _isMoving = true;
+        }
     }
 }
