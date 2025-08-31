@@ -13,4 +13,9 @@ public class PlayerAnimation : MonoBehaviour
 
         transform.DORotateQuaternion(targetRotation, _rotationDuration);
     }
+    
+    private void OnDestroy()
+    {
+        transform.DOKill();
+    }
 }

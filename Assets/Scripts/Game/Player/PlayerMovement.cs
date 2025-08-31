@@ -71,7 +71,7 @@ public class PlayerMovement : MonoBehaviour, IMovable
         {
             if (hitInfo.collider != null && hitInfo.collider.gameObject != gameObject)
             {
-                if (hitInfo.collider.TryGetComponent<EnemyBase>(out EnemyBase enemy))
+                if (hitInfo.collider.TryGetComponent<RoadEnemy>(out RoadEnemy enemy))
                 {
                     OnPlayerHitEnemy?.Invoke();
                     return;
@@ -89,7 +89,7 @@ public class PlayerMovement : MonoBehaviour, IMovable
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider.TryGetComponent<EnemyBase>(out EnemyBase enemy))
+        if (collision.collider.TryGetComponent<RoadEnemy>(out RoadEnemy enemy))
         {
             OnPlayerHitEnemy?.Invoke();
         }
@@ -97,12 +97,12 @@ public class PlayerMovement : MonoBehaviour, IMovable
     
     private void HandleEnterBattleZone()
     {
-        EnableControl(true);
+        EnableControl(false);
     }
 
     private void HandleExitBattleZone()
     {
-        EnableControl(false);
+        EnableControl(true);
     }
 
     public void EnableControl(bool enabled)

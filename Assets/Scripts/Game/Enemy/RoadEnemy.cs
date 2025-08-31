@@ -15,12 +15,15 @@ public class RoadEnemy : EnemyBase
         _movementSpeed = speed;
     }
 
-    protected override void AttackPlayer()
+    protected override void Update()
     {
-  
+        base.Update();
+
+        CheckBounds();
     }
     
-    protected override void CheckBounds()
+    
+    private void CheckBounds()
     {
         if (Mathf.Abs(transform.position.x) > _xLimit)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class BattlePlatform : MonoBehaviour
@@ -10,7 +11,13 @@ public class BattlePlatform : MonoBehaviour
     
     public static event Action OnPlayerEnterBattleZone;
     public static event Action OnPlayerExitBattleZone;
-
+    
+    private List<BattleEnemy> _activeEnemies = new List<BattleEnemy>();
+    public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
+    
+    
+    private Transform _player;
+    private BattleSpawner _battleSpawner;
     private SphereCollider _collider;
 
     private void OnValidate()
@@ -25,22 +32,46 @@ public class BattlePlatform : MonoBehaviour
     {
         _collider = GetComponent<SphereCollider>();
         _collider.isTrigger = _useTrigger;
+        
+        _battleSpawner = GetComponentInChildren<BattleSpawner>();
+    }
+
+    private void OnEnable()
+    {
+        _battleSpawner.OnEnemySpawned += RegisterEnemy;
+    }
+
+    private void OnDisable()
+    {
+        _battleSpawner.OnEnemySpawned -= RegisterEnemy;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement controller))
+        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement player))
         {
+            _player = player.transform;
+            _player.GetComponent<PlayerBattle>().SetBattlerPlatform(this);
+            
             OnPlayerEnterBattleZone?.Invoke();
+            _battleSpawner.SpawnEnemies(_player);
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement controller))
+        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement player))
         {
             OnPlayerExitBattleZone?.Invoke();
         }
+    }
+    
+    private void RegisterEnemy(BattleEnemy enemy)
+    {
+        if (!_activeEnemies.Contains(enemy))
+            _activeEnemies.Add(enemy);
+
+        enemy.OnEnemyDied += () => _activeEnemies.Remove(enemy);
     }
     
     private void OnDrawGizmosSelected()

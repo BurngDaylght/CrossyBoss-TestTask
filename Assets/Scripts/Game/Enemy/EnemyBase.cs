@@ -19,7 +19,6 @@ public abstract class EnemyBase : MonoBehaviour
     {
         Move();
         RotateTowardsMoveDirection();
-        CheckBounds();
     }
 
     protected virtual void Move()
@@ -33,15 +32,5 @@ public abstract class EnemyBase : MonoBehaviour
 
         Quaternion targetRotation = Quaternion.LookRotation(_moveDirection, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
-    }
-
-    protected abstract void CheckBounds();
-
-    protected abstract void AttackPlayer();
-
-    public virtual void Die()
-    {
-        transform.DOKill();
-        Destroy(gameObject);
     }
 }
