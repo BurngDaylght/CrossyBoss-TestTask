@@ -11,6 +11,7 @@ public class BattlePlatform : MonoBehaviour
     
     public static event Action OnPlayerEnterBattleZone;
     public static event Action OnPlayerExitBattleZone;
+    public static event Action OnAllEnemiesDefeated;
     
     private List<BattleEnemy> _activeEnemies = new List<BattleEnemy>();
     public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
@@ -71,7 +72,17 @@ public class BattlePlatform : MonoBehaviour
         if (!_activeEnemies.Contains(enemy))
             _activeEnemies.Add(enemy);
 
-        enemy.OnEnemyDied += () => _activeEnemies.Remove(enemy);
+        enemy.OnEnemyDied += () =>
+        {
+            _activeEnemies.Remove(enemy);
+            CheckAllEnemiesDefeated();
+        };
+    }
+    
+    private void CheckAllEnemiesDefeated()
+    {
+        if (_activeEnemies.Count == 0)
+            OnAllEnemiesDefeated?.Invoke();
     }
     
     private void OnDrawGizmosSelected()

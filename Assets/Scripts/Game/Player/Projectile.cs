@@ -6,7 +6,7 @@ public class Projectile : MonoBehaviour
     [SerializeField] private float _damage = 1f;
     [SerializeField] private float _lifeTime = 5f;
 
-    private Transform _target;
+    private Vector3 _direction;
     private CustomPool<Projectile> _pool;
     private float _spawnTime;
 
@@ -15,39 +15,32 @@ public class Projectile : MonoBehaviour
         _pool = pool;
     }
 
-    public void SetTarget(Transform target)
+    public void Shoot(Vector3 direction)
     {
-        _target = target;
+        _direction = direction.normalized;
         _spawnTime = Time.time;
     }
 
     private void Update()
     {
-        if (_target == null || Time.time - _spawnTime > _lifeTime)
+        if (Time.time - _spawnTime > _lifeTime)
         {
             ReturnToPool();
             return;
         }
 
-        Vector3 direction = (_target.position - transform.position).normalized;
-        transform.position += direction * _speed * Time.deltaTime;
-        transform.rotation = Quaternion.LookRotation(direction);
+        transform.position += _direction * _speed * Time.deltaTime;
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (_target == null) return;
-
-        if (other.transform == _target)
+        IDamageable damageable = other.GetComponent<IDamageable>();
+        if (damageable != null)
         {
-            IDamageable damageable = other.GetComponent<IDamageable>();
-            if (damageable != null)
-            {
-                damageable.TakeDamage(_damage);
-            }
-
-            ReturnToPool();
+            damageable.TakeDamage(_damage);
         }
+
+        ReturnToPool();
     }
 
     private void ReturnToPool()

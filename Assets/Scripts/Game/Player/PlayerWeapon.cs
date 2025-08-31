@@ -56,11 +56,13 @@ public class PlayerWeapon : MonoBehaviour
     {
         Projectile projectile = _projectilePool.Get();
 
-        projectile.transform.position = _shotPoint.position;
+        Vector3 dir = (target.transform.position - _shotPoint.position).normalized;
+
+        projectile.transform.position = _shotPoint.position + dir * 0.1f;
         projectile.transform.rotation = Quaternion.identity;
 
         projectile.SetPool(_projectilePool);
-        projectile.SetTarget(target.transform);
+        projectile.Shoot(dir);
     }
 
     private void HandleStartMoving()

@@ -11,8 +11,11 @@ public abstract class EnemyBase : MonoBehaviour
     
     protected virtual void Start()
     {
-        Quaternion targetRotation = Quaternion.LookRotation(_moveDirection, Vector3.up);
-        transform.rotation = targetRotation;
+        if (_moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(_moveDirection, Vector3.up);
+            transform.rotation = targetRotation;
+        }
     }
     
     protected virtual void Update()
