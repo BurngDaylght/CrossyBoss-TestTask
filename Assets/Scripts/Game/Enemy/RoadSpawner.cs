@@ -3,21 +3,33 @@ using UnityEngine;
 
 public class RoadSpawner : MonoBehaviour
 {
+    [Header("Spawn Settings")]
     [SerializeField] private RoadEnemy _enemyPrefab;
-    [SerializeField] private float _minSpawnInterval = 1f;
-    [SerializeField] private float _maxSpawnInterval = 3f;
+    [SerializeField] private int _initialEnemies = 5;
+    [SerializeField] private Vector3 _spawnOffset;
     [SerializeField] private float _xSpawnStart = -10f;
     [SerializeField] private float _xSpawnEnd = 10f;
-    [SerializeField] private Vector3 _spawnOffset;
+
+    [Header("Spawn Timing")]
+    [SerializeField] private float _minSpawnInterval = 1f;
+    [SerializeField] private float _maxSpawnInterval = 3f;
+
+    [Header("Enemy Speed")]
     [SerializeField] private float _minSpeed = 1f;
     [SerializeField] private float _maxSpeed = 3f;
-    [SerializeField] private int _initialEnemies = 5;
-    
+
+    [Header("Pool Settings")]
+    [SerializeField] private Transform _poolParent;
+    [SerializeField] private int _prewarmObjectsCount = 10;
+
+    private CustomPool<RoadEnemy> _roadEnemyPool;
     private Vector3 _spawnDirection;
     private float _randomSpeed;
 
     private void Start()
     {
+        _roadEnemyPool = new CustomPool<RoadEnemy>(_enemyPrefab, _prewarmObjectsCount, _poolParent);
+
         _spawnDirection = Random.value > 0.5f ? Vector3.right : Vector3.left;
         _randomSpeed = Random.Range(_minSpeed, _maxSpeed);
 
@@ -46,15 +58,19 @@ public class RoadSpawner : MonoBehaviour
 
     private void SpawnEnemy(float xPosition)
     {
+        RoadEnemy enemy = _roadEnemyPool.Get();
+
         Vector3 spawnPos = new Vector3(
             xPosition + _spawnOffset.x,
             transform.position.y + _spawnOffset.y,
             transform.position.z + _spawnOffset.z
         );
 
-        RoadEnemy enemy = Instantiate(_enemyPrefab, spawnPos, Quaternion.identity, transform);
+        enemy.transform.position = spawnPos;
+        enemy.transform.rotation = Quaternion.identity;
 
         enemy.SetMoveDirection(_spawnDirection);
         enemy.SetSpeed(_randomSpeed);
+        enemy.SetPool(_roadEnemyPool);
     }
 }

@@ -1,7 +1,10 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class RoadEnemy : EnemyBase
 {
+    private CustomPool<RoadEnemy> _pool;
+
     public void SetMoveDirection(Vector3 direction)
     {
         _moveDirection = direction.normalized;
@@ -12,8 +15,29 @@ public class RoadEnemy : EnemyBase
         _movementSpeed = speed;
     }
 
-    public override void AttackPlayer()
+    protected override void AttackPlayer()
     {
- 
+  
+    }
+    
+    protected override void CheckBounds()
+    {
+        if (Mathf.Abs(transform.position.x) > _xLimit)
+        {
+            transform.DOKill();
+            ReturnToPool();
+        }
+    }
+    
+    public void SetPool(CustomPool<RoadEnemy> pool)
+    {
+        _pool = pool;
+
+        CancelInvoke();
+    }
+
+    private void ReturnToPool()
+    {
+        _pool.Release(this);
     }
 }

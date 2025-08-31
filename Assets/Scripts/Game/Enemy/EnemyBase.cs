@@ -4,7 +4,7 @@ using DG.Tweening;
 public abstract class EnemyBase : MonoBehaviour
 {
     [SerializeField] protected float _movementSpeed;
-    [SerializeField] private float _xLimit = 10f;
+    [SerializeField] protected float _xLimit = 10f;
     [SerializeField] private float _rotationSpeed = 100f;
 
     protected Vector3 _moveDirection;
@@ -34,16 +34,10 @@ public abstract class EnemyBase : MonoBehaviour
         Quaternion targetRotation = Quaternion.LookRotation(_moveDirection, Vector3.up);
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, _rotationSpeed * Time.deltaTime);
     }
-        
-    protected virtual void CheckBounds()
-    {
-        if (Mathf.Abs(transform.position.x) > _xLimit)
-        {
-            Die();
-        }
-    }
 
-    public abstract void AttackPlayer();
+    protected abstract void CheckBounds();
+
+    protected abstract void AttackPlayer();
 
     public virtual void Die()
     {
