@@ -1,10 +1,13 @@
+using System;
 using UnityEngine;
+using Zenject;
 
 public class PlayerMovement : MonoBehaviour, IMovable
 {
     [SerializeField] private float _stepDistance = 1f;
     [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private float _collisionCheckDistance = 0.9f;
+    
+    public event Action OnPlayerHitEnemy;
 
     private Vector3 _targetPosition;
     private bool _isMoving = false;
@@ -37,15 +40,38 @@ public class PlayerMovement : MonoBehaviour, IMovable
 
     private void TryMove(Vector3 direction)
     {
+        if (_isMoving) return;
+
         float halfHeight = 0.5f;
         float halfWidth = 0.5f;
-        Vector3 center = transform.position + Vector3.up * halfHeight;
+        Vector3 halfExtents = new Vector3(halfWidth, halfHeight, halfWidth);
+        Vector3 casterCenter = transform.position + Vector3.up * halfHeight;
 
-        if (!_isMoving && !Physics.BoxCast(center, new Vector3(halfWidth, halfHeight, halfWidth), direction, out _, Quaternion.identity, _stepDistance))
+        if (Physics.BoxCast(casterCenter, halfExtents, direction, out RaycastHit hitInfo, Quaternion.identity, _stepDistance))
         {
-            _targetPosition = transform.position + direction * _stepDistance;
-            _isMoving = true;
-            _playerAnimation?.PlayMoveAnimation(direction);
+            if (hitInfo.collider != null && hitInfo.collider.gameObject != gameObject)
+            {
+                if (hitInfo.collider.TryGetComponent<EnemyBase>(out EnemyBase enemy))
+                {
+                    OnPlayerHitEnemy?.Invoke();
+                    return;
+                }
+
+                return;
+            }
+        }
+
+        Vector3 targetPos = transform.position + direction * _stepDistance;
+        _targetPosition = targetPos;
+        _isMoving = true;
+        _playerAnimation?.PlayMoveAnimation(direction);
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.collider.TryGetComponent<EnemyBase>(out EnemyBase enemy))
+        {
+            OnPlayerHitEnemy?.Invoke();
         }
     }
 }
