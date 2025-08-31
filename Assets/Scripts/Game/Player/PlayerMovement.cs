@@ -8,6 +8,13 @@ public class PlayerMovement : MonoBehaviour, IMovable
 
     private Vector3 _targetPosition;
     private bool _isMoving = false;
+    
+    private PlayerAnimation _playerAnimation;
+    
+    private void Awake()
+    {
+        _playerAnimation = GetComponent<PlayerAnimation>();
+    }
 
     private void Update()
     {
@@ -38,6 +45,7 @@ public class PlayerMovement : MonoBehaviour, IMovable
         {
             _targetPosition = transform.position + direction * _stepDistance;
             _isMoving = true;
+            _playerAnimation?.PlayMoveAnimation(direction);
         }
     }
 }
