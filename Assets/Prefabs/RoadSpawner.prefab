@@ -45,11 +45,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _enemyPrefab: {fileID: 6559168558978061951, guid: a8ca8ab17a24d254ebff9e53fb4a85ff, type: 3}
-  _minSpawnInterval: 0
-  _maxSpawnInterval: 3
+  _initialEnemies: 5
+  _spawnOffset: {x: 0, y: 0.5, z: 0}
   _xSpawnStart: -10
   _xSpawnEnd: 10
-  _spawnOffset: {x: 0, y: 0.5, z: 0}
+  _minSpawnInterval: 0
+  _maxSpawnInterval: 3
   _minSpeed: 1
-  _maxSpeed: 10
-  _initialEnemies: 5
+  _maxSpeed: 3
+  _poolParent: {fileID: 0}
+  _prewarmObjectsCount: 10

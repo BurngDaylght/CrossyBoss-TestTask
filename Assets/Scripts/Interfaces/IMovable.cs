@@ -4,4 +4,5 @@ public interface IMovable
     void MoveLeft();
     void MoveRight();
     void MoveBack();
+    void EnableControl(bool enabled);
 }

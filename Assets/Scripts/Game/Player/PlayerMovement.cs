@@ -6,17 +6,33 @@ public class PlayerMovement : MonoBehaviour, IMovable
 {
     [SerializeField] private float _stepDistance = 1f;
     [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _xLimit = 10f;
+    [SerializeField] private LayerMask _obstacleLayers = ~0;
     
     public event Action OnPlayerHitEnemy;
 
     private Vector3 _targetPosition;
+    
     private bool _isMoving = false;
+    private bool _controlEnabled = true;
     
     private PlayerAnimation _playerAnimation;
     
     private void Awake()
     {
         _playerAnimation = GetComponent<PlayerAnimation>();
+    }
+    
+    private void OnEnable()
+    {
+        BattlePlatform.OnPlayerEnterBattleZone += HandleEnterBattleZone;
+        BattlePlatform.OnPlayerExitBattleZone += HandleExitBattleZone;
+    }
+
+    private void OnDisable()
+    {
+        BattlePlatform.OnPlayerEnterBattleZone -= HandleEnterBattleZone;
+        BattlePlatform.OnPlayerExitBattleZone -= HandleExitBattleZone;
     }
 
     private void Update()
@@ -47,7 +63,11 @@ public class PlayerMovement : MonoBehaviour, IMovable
         Vector3 halfExtents = new Vector3(halfWidth, halfHeight, halfWidth);
         Vector3 casterCenter = transform.position + Vector3.up * halfHeight;
 
-        if (Physics.BoxCast(casterCenter, halfExtents, direction, out RaycastHit hitInfo, Quaternion.identity, _stepDistance))
+        Vector3 targetPos = transform.position + direction * _stepDistance;
+        if (Mathf.Abs(targetPos.x) > _xLimit) return;
+
+        if (Physics.BoxCast(casterCenter, halfExtents, direction, out RaycastHit hitInfo,
+                            Quaternion.identity, _stepDistance, _obstacleLayers.value, QueryTriggerInteraction.Ignore))
         {
             if (hitInfo.collider != null && hitInfo.collider.gameObject != gameObject)
             {
@@ -57,11 +77,11 @@ public class PlayerMovement : MonoBehaviour, IMovable
                     return;
                 }
 
+                Debug.Log("Путь заблокирован препятствием: " + hitInfo.collider.name);
                 return;
             }
         }
 
-        Vector3 targetPos = transform.position + direction * _stepDistance;
         _targetPosition = targetPos;
         _isMoving = true;
         _playerAnimation?.PlayMoveAnimation(direction);
@@ -73,5 +93,20 @@ public class PlayerMovement : MonoBehaviour, IMovable
         {
             OnPlayerHitEnemy?.Invoke();
         }
+    }
+    
+    private void HandleEnterBattleZone()
+    {
+        EnableControl(true);
+    }
+
+    private void HandleExitBattleZone()
+    {
+        EnableControl(false);
+    }
+
+    public void EnableControl(bool enabled)
+    {
+        _controlEnabled = enabled;
     }
 }

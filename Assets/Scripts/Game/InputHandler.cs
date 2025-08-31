@@ -1,18 +1,41 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using Zenject;
 
 public class InputHandler : MonoBehaviour
 {
     [SerializeField] private float _swipeThreshold = 50f;
+    
+    [Header("Input Action Asset")]
+    [SerializeField] private InputActionAsset _inputAction;
+    
+    [Header("Action Map Name References")]
+    [SerializeField] private string _actionMapName = "PlayerBattle";
+    
+    [Header("Action Name References")]
+    [SerializeField] private string _move = "Move";
+    
+    private InputAction _moveAction;
+    
+    public Vector2 MoveInput { get; private set; }
 
     private TouchField _touchField;
     private IMovable _movable;
+    private IBattleMovable _battleMovable;
     
     [Inject]
-    private void Construct(TouchField touchField, IMovable movable)
+    private void Construct(TouchField touchField, IMovable movable, IBattleMovable battleMovable)
     {
         _touchField = touchField;
         _movable = movable;
+        _battleMovable = battleMovable;
+    }
+    
+    private void Awake()
+    {
+        _moveAction = _inputAction.FindActionMap(_actionMapName).FindAction(_move);
+        
+        RegisterInputActions();
     }
 
     private void Update()
@@ -43,5 +66,28 @@ public class InputHandler : MonoBehaviour
 
             _touchField.ConsumeSwipe();
         }
+        
+        ReadMovement();
+    }
+    
+    private void RegisterInputActions()
+    {
+        _moveAction.performed += context => MoveInput = context.ReadValue<Vector2>();
+        _moveAction.canceled += context => MoveInput = Vector2.zero;
+    }
+    
+    private void ReadMovement()
+    {
+        _battleMovable.Move(MoveInput);
+    }
+    
+    private void OnEnable()
+    {
+        _moveAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _moveAction.Disable();
     }
 }
