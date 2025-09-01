@@ -42,7 +42,7 @@ public class KeyDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     {
         _canvasGroup.blocksRaycasts = true;
 
-        Lock lockArea = eventData.pointerEnter?.GetComponent<Lock>();
+        ChestLock lockArea = eventData.pointerEnter?.GetComponent<ChestLock>();
         if (lockArea != null && lockArea.CanAcceptKey(keyImage.color))
         {
             lockArea.AddKey(keyImage.color);

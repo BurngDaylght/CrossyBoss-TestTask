@@ -2,9 +2,23 @@ using UnityEngine;
 using Zenject;
 
 public class LevelUI : MonoBehaviour
-{
+{    
     [SerializeField] private CanvasGroup _lockUI;
     [SerializeField] private GameObject _joystick;
+    
+    private LevelLogic _levelLogic;   
+    private BattlePlatform _battlePlatform;   
+    private ChestLock _chestLock;   
+    private Chest _chest;
+    
+    [Inject]
+    private void Construct(LevelLogic levelLogic, BattlePlatform battlePlatform, ChestLock chestLock, Chest chest)
+    {
+        _levelLogic = levelLogic;
+        _battlePlatform = battlePlatform;
+        _chestLock = chestLock;
+        _chest = chest;
+    }
 
     private void Awake()
     {
@@ -14,22 +28,26 @@ public class LevelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone += ShowJoystick;
-        BattlePlatform.OnPlayerExitBattleZone += HideJoystick;
+        _battlePlatform.OnPlayerEnterBattleZone += ShowJoystick;
+        _battlePlatform.OnPlayerExitBattleZone += HideJoystick;
         
-        Chest.OnChestInteracted += ShowLock;
+        _chest.OnChestInteracted += ShowLock;
 
-        Lock.OnLockCompleted += HideLock;
+        _chestLock.OnLockCompleted += HideLock;
+
+        _levelLogic.OnLevelComplete += HideJoystick;
     }
 
     private void OnDisable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone -= ShowJoystick;
-        BattlePlatform.OnPlayerExitBattleZone -= HideJoystick;
+        _battlePlatform.OnPlayerEnterBattleZone -= ShowJoystick;
+        _battlePlatform.OnPlayerExitBattleZone -= HideJoystick;
         
-        Chest.OnChestInteracted -= ShowLock;
+        _chest.OnChestInteracted -= ShowLock;
         
-        Lock.OnLockCompleted -= HideLock;
+        _chestLock.OnLockCompleted -= HideLock;
+        
+        _levelLogic.OnLevelComplete -= HideJoystick;
     }
     
     private void ShowLock()

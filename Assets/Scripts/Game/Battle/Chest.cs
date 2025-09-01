@@ -3,11 +3,11 @@ using UnityEngine;
 
 public class Chest : MonoBehaviour
 {
-    public static event Action OnChestInteracted;
+    public event Action OnChestInteracted;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement player))
+        if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
         {
             OnChestInteracted?.Invoke();
         }

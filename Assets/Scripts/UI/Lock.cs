@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using TMPro;
 using System;
 
-public class Lock : MonoBehaviour
+public class ChestLock : MonoBehaviour
 {
     [SerializeField] private Image _lockImage;
     [SerializeField] private TextMeshProUGUI _counterText;
@@ -12,7 +12,7 @@ public class Lock : MonoBehaviour
     private int _currentCount = 0;
     private Color _lockColor;
 
-    public static event Action OnLockCompleted;
+    public event Action OnLockCompleted;
 
     private void Awake()
     {

@@ -21,22 +21,31 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
 
     private PlayerAnimation _playerAnimation;
     private BattlePlatform _currentPlatform;
+    private BattlePlatform _battlePlatform;
+    private LevelLogic _levelLogic;
+        
+    [Inject]
+    private void Construct(PlayerAnimation playerAnimation, LevelLogic levelLogic, BattlePlatform battlePlatform)
+    {
+        _playerAnimation = playerAnimation;
+        _levelLogic = levelLogic;
+        _battlePlatform = battlePlatform;
+    }
     
     private void OnEnable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone += HandleEnterBattleZone;
-        BattlePlatform.OnPlayerExitBattleZone += HandleExitBattleZone;
+        _battlePlatform.OnPlayerEnterBattleZone += HandleEnterBattleZone;
+        _battlePlatform.OnPlayerExitBattleZone += HandleExitBattleZone;
+        
+        _levelLogic.OnLevelComplete += DisableControl;
     }
 
     private void OnDisable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone -= HandleEnterBattleZone;
-        BattlePlatform.OnPlayerExitBattleZone -= HandleExitBattleZone;
-    }
-
-    private void Awake()
-    {
-        _playerAnimation = GetComponent<PlayerAnimation>();
+        _battlePlatform.OnPlayerEnterBattleZone -= HandleEnterBattleZone;
+        _battlePlatform.OnPlayerExitBattleZone -= HandleExitBattleZone;
+        
+        _levelLogic.OnLevelComplete -= DisableControl;
     }
 
     private void Update()
@@ -50,7 +59,6 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
     public void EnterBattle()
     {
         _inBattle = true;
-        Debug.Log("Игрок вошёл в боевой режим!");
     }
 
     public void Move(Vector2 direction)
@@ -77,13 +85,13 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
     private void HandleEnterBattleZone()
     {
         EnterBattle();
-        EnableControl(true);
+        EnableControl();
     }
 
     private void HandleExitBattleZone()
     {
         _currentPlatform = null;
-        EnableControl(false);
+        DisableControl();
     }
 
     private void LookAtNearestEnemy()
@@ -121,9 +129,14 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
             .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
             .FirstOrDefault();
     }
-
-    public void EnableControl(bool enabled)
+    
+    private void DisableControl()
     {
-        _controlEnabled = enabled;
+        _controlEnabled = false;
+    }
+
+    private void EnableControl()
+    {
+        _controlEnabled = true;
     }
 }

@@ -9,9 +9,9 @@ public class BattlePlatform : MonoBehaviour
     [SerializeField] private Vector3 _zoneCenter = Vector3.zero;
     [SerializeField] private bool _useTrigger = true;
     
-    public static event Action OnPlayerEnterBattleZone;
-    public static event Action OnPlayerExitBattleZone;
-    public static event Action OnAllEnemiesDefeated;
+    public event Action OnPlayerEnterBattleZone;
+    public event Action OnPlayerExitBattleZone;
+    public event Action OnAllEnemiesDefeated;
     
     private List<BattleEnemy> _activeEnemies = new List<BattleEnemy>();
     public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
@@ -49,7 +49,7 @@ public class BattlePlatform : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement player))
+        if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
         {
             _player = player.transform;
             _player.GetComponent<PlayerBattle>().SetBattlerPlatform(this);
@@ -61,7 +61,7 @@ public class BattlePlatform : MonoBehaviour
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent<PlayerMovement>(out PlayerMovement player))
+        if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
         {
             OnPlayerExitBattleZone?.Invoke();
         }

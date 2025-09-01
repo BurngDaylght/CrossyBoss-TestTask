@@ -3,29 +3,28 @@ using Zenject;
 
 public class ChestSpawner : MonoBehaviour
 {
-    [SerializeField] private GameObject _chestPrefab;
-    [SerializeField] private Transform _spawnPoint;
+    [SerializeField] private GameObject _chest;
 
-    private PlayerMovement _playerMovement;
+    private BattlePlatform _battlePlatform;
     
     [Inject]
-    private void Construct(PlayerMovement playerMovement)
+    private void Construct(BattlePlatform battlePlatform)
     {
-        _playerMovement = playerMovement;
+        _battlePlatform = battlePlatform;
     }
 
     private void OnEnable()
     {
-        BattlePlatform.OnAllEnemiesDefeated += SpawnChest;
+        _battlePlatform.OnAllEnemiesDefeated += ShowChest;
     }
 
     private void OnDisable()
     {
-        BattlePlatform.OnAllEnemiesDefeated -= SpawnChest;
+        _battlePlatform.OnAllEnemiesDefeated -= ShowChest;
     }
 
-    public void SpawnChest()
+    public void ShowChest()
     {
-        Instantiate(_chestPrefab, _spawnPoint.position, Quaternion.identity, _spawnPoint);
+        _chest.SetActive(true);
     }
 }

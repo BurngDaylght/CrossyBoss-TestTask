@@ -1,21 +1,30 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using Zenject;
 
 public class KeyColorRandomizer : MonoBehaviour
 {
-    [SerializeField] private Lock _lock;
+    [SerializeField] private ChestLock _lock;
     [SerializeField] private List<KeyDrag> _keyDragComponents;
     [SerializeField] private Color[] _possibleColors;
 
+    private Chest _chest;
+    
+    [Inject]
+    private void Construct(Chest chest)
+    {
+        _chest = chest;
+    }
+
     private void OnEnable()
     {
-        Chest.OnChestInteracted += RandomizeKeys;
+        _chest.OnChestInteracted += RandomizeKeys;
     }
     
     private void OnDisable()
     {
-        Chest.OnChestInteracted -= RandomizeKeys;
+        _chest.OnChestInteracted -= RandomizeKeys;
     }
 
     public void RandomizeKeys()

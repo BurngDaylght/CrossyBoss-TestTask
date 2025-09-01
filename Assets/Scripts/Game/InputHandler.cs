@@ -1,9 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Zenject;
 
 public class InputHandler : MonoBehaviour
 {
+    public event Action OnTap;
     [SerializeField] private float _swipeThreshold = 50f;
     
     [Header("Input Action Asset")]
@@ -20,11 +22,13 @@ public class InputHandler : MonoBehaviour
     public Vector2 MoveInput { get; private set; }
 
     private TouchField _touchField;
-    private IMovable _movable;
+    private IRoadMovable _movable;
     private IBattleMovable _battleMovable;
     
+    private bool _firstTapOccurred = false;
+    
     [Inject]
-    private void Construct(TouchField touchField, IMovable movable, IBattleMovable battleMovable)
+    private void Construct(TouchField touchField, IRoadMovable movable, IBattleMovable battleMovable)
     {
         _touchField = touchField;
         _movable = movable;
@@ -42,6 +46,8 @@ public class InputHandler : MonoBehaviour
     {
         if (_touchField.WasTap)
         {
+            OnTap?.Invoke();
+
             _movable.MoveStraight();
             _touchField.ConsumeTap();
             return;

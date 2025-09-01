@@ -17,13 +17,11 @@ public class PlayerStats : MonoBehaviour, IDamageable
     public void TakeDamage(float amount)
     {
         _currentHealth -= amount;
-        Debug.Log($"Игрок получил {amount} урона. HP: {_currentHealth}");
 
         if (_currentHealth <= 0)
         {
             _currentHealth = 0;
             OnPlayerDied?.Invoke();
-            Debug.Log("Игрок погиб!");
         }
     }
 

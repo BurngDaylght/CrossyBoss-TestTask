@@ -11,7 +11,7 @@ public class CameraFollow : MonoBehaviour
     private Transform _target;
     
     [Inject]
-    private void Construct(PlayerMovement playerMovement)
+    private void Construct(PlayerRoadMovement playerMovement)
     {
         _target = playerMovement.gameObject.transform;
     }

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zenject;
 
 public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
@@ -14,7 +15,28 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoi
     private float _touchStartTime;
     private Vector2 _currentDragDelta;
     private bool _isSwiping = false;
+    private bool _isEnabled = true;
 
+    private LevelLogic _levelLogic;
+    
+    [Inject]
+    private void Construct(LevelLogic levelLogic)
+    {
+        _levelLogic = levelLogic;
+    }
+
+    private void OnEnable()
+    {
+        _levelLogic.OnLevelStart += EnableInput;
+        _levelLogic.OnLevelComplete += DisableInput;
+    }
+
+    private void OnDisable()
+    {
+        _levelLogic.OnLevelStart -= EnableInput;
+        _levelLogic.OnLevelComplete -= DisableInput;
+    }
+    
     public void OnPointerDown(PointerEventData eventData)
     {
         _isSwiping = true;
@@ -70,5 +92,25 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoi
     public Vector2 GetCurrentDragDelta()
     {
         return _currentDragDelta;
+    }
+    
+    public void EnableInput()
+    {
+        _isEnabled = true;
+    }
+
+    public void DisableInput()
+    {
+        _isEnabled = false;
+        ResetInputState();
+    }
+    
+    private void ResetInputState()
+    {
+        WasTap = false;
+        WasSwipe = false;
+        SwipeDelta = Vector2.zero;
+        _isSwiping = false;
+        _currentDragDelta = Vector2.zero;
     }
 }

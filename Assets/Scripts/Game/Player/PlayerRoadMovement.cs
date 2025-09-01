@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 using Zenject;
 
-public class PlayerMovement : MonoBehaviour, IMovable
+public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
 {
     [SerializeField] private float _stepDistance = 1f;
     [SerializeField] private float _moveSpeed = 5f;
@@ -14,25 +14,36 @@ public class PlayerMovement : MonoBehaviour, IMovable
     private Vector3 _targetPosition;
     
     private bool _isMoving = false;
-    private bool _controlEnabled = true;
+    [SerializeField] private bool _controlEnabled = false;
     
     private PlayerAnimation _playerAnimation;
+    private LevelLogic _levelLogic;
+    private BattlePlatform _battlePlatform;
     
-    private void Awake()
+    [Inject]
+    private void Construct(LevelLogic levelLogic, PlayerAnimation playerAnimation, BattlePlatform battlePlatform)
     {
-        _playerAnimation = GetComponent<PlayerAnimation>();
+        _levelLogic = levelLogic;
+        _playerAnimation = playerAnimation;
+        _battlePlatform = battlePlatform;
     }
     
     private void OnEnable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone += HandleEnterBattleZone;
-        BattlePlatform.OnPlayerExitBattleZone += HandleExitBattleZone;
+        _battlePlatform.OnPlayerEnterBattleZone += DisableControl;
+        _battlePlatform.OnPlayerExitBattleZone += EnableControl;
+
+        _levelLogic.OnLevelStart += EnableControl;
+        _levelLogic.OnLevelComplete += DisableControl;
     }
 
     private void OnDisable()
     {
-        BattlePlatform.OnPlayerEnterBattleZone -= HandleEnterBattleZone;
-        BattlePlatform.OnPlayerExitBattleZone -= HandleExitBattleZone;
+        _battlePlatform.OnPlayerEnterBattleZone -= DisableControl;
+        _battlePlatform.OnPlayerExitBattleZone -= EnableControl;
+        
+        _levelLogic.OnLevelStart -= EnableControl;
+        _levelLogic.OnLevelComplete -= DisableControl;
     }
 
     private void Update()
@@ -56,7 +67,7 @@ public class PlayerMovement : MonoBehaviour, IMovable
 
     private void TryMove(Vector3 direction)
     {
-        if (_isMoving) return;
+        if (!_controlEnabled || _isMoving) return;
 
         float halfHeight = 0.5f;
         float halfWidth = 0.5f;
@@ -95,18 +106,13 @@ public class PlayerMovement : MonoBehaviour, IMovable
         }
     }
     
-    private void HandleEnterBattleZone()
+    private void DisableControl()
     {
-        EnableControl(false);
+        _controlEnabled = false;
     }
 
-    private void HandleExitBattleZone()
+    private void EnableControl()
     {
-        EnableControl(true);
-    }
-
-    public void EnableControl(bool enabled)
-    {
-        _controlEnabled = enabled;
+        _controlEnabled = true;
     }
 }

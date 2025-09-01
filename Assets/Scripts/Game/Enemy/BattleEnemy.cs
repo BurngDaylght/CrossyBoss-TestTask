@@ -54,7 +54,6 @@ public class BattleEnemy : EnemyBase, IDamageable
         if (damageable != null)
         {
             damageable.TakeDamage(_damage);
-            Debug.Log($"{name} атакует игрока и наносит {_damage} урона!");
         }
     }
 

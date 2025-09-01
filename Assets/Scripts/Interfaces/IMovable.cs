@@ -1,8 +1,7 @@
-public interface IMovable
+public interface IRoadMovable
 {
     void MoveStraight();
     void MoveLeft();
     void MoveRight();
     void MoveBack();
-    void EnableControl(bool enabled);
 }
