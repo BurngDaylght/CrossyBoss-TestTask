@@ -11,6 +11,7 @@ public class LevelLogic : MonoBehaviour
     public event Action OnFirstTap;
 
     private bool _firstTapped = false;
+    private bool _isRestarting = false;
 
     private SceneLoader _sceneLoader;
     private PlayerRoadMovement _playerMovement;
@@ -66,12 +67,17 @@ public class LevelLogic : MonoBehaviour
 
     private void LoseLevel()
     {
+        if (_isRestarting) return;
+        
         OnLevelLosing?.Invoke();
         RestartLevel();
     }
     
     public void RestartLevel()
     {
+        if (_isRestarting) return;
+
+        _isRestarting = true;
         OnLevelRestart?.Invoke();
         _sceneLoader.RestartSceneWithDelay(2f);
     }

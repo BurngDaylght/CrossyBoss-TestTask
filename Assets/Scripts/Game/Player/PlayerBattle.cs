@@ -7,45 +7,64 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
 {
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private float _rotationSpeed = 720f;
+    [SerializeField] private float _confinementPadding = 0.05f;
 
     private bool _inBattle = false;
     public bool InBattle => _inBattle;
-    
+
     private bool _controlEnabled = false;
-    
+
     private bool _isMoving = false;
     public bool IsMoving => _isMoving;
-    
+
     public event Action OnStartMoving;
     public event Action OnStopMoving;
-
-    private PlayerAnimation _playerAnimation;
     private BattlePlatform _currentPlatform;
+
+    private HealthUI _healthUI;
+    private PlayerAnimation _playerAnimation;
     private BattlePlatform _battlePlatform;
     private LevelLogic _levelLogic;
-        
+    private Chest _chest;
+    private PlayerRoadMovement _playerRoadMovement;
+
     [Inject]
-    private void Construct(PlayerAnimation playerAnimation, LevelLogic levelLogic, BattlePlatform battlePlatform)
+    private void Construct(PlayerAnimation playerAnimation, LevelLogic levelLogic, BattlePlatform battlePlatform, Chest chest, PlayerRoadMovement playerRoadMovement)
     {
         _playerAnimation = playerAnimation;
         _levelLogic = levelLogic;
         _battlePlatform = battlePlatform;
+        _chest = chest;
+        _playerRoadMovement = playerRoadMovement;
     }
     
+    private void Start()
+    {
+        _healthUI = GetComponentInChildren<HealthUI>();
+    }
+
     private void OnEnable()
     {
         _battlePlatform.OnPlayerEnterBattleZone += HandleEnterBattleZone;
         _battlePlatform.OnPlayerExitBattleZone += HandleExitBattleZone;
-        
+    
         _levelLogic.OnLevelComplete += DisableControl;
+        _levelLogic.OnLevelLosing += DisableControl;
+
+        _chest.OnChestInteracted += DisableControl;
     }
 
     private void OnDisable()
     {
         _battlePlatform.OnPlayerEnterBattleZone -= HandleEnterBattleZone;
         _battlePlatform.OnPlayerExitBattleZone -= HandleExitBattleZone;
-        
+    
         _levelLogic.OnLevelComplete -= DisableControl;
+        _levelLogic.OnLevelLosing -= DisableControl;
+
+        _chest.OnChestInteracted -= DisableControl;
+
+        _playerRoadMovement.OnMoveComplete -= OnRoadMoveComplete_EnableControl;
     }
 
     private void Update()
@@ -73,18 +92,54 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
         else if (!_isMoving && wasMoving)
             OnStopMoving?.Invoke();
 
-        if (_isMoving)
-        {
-            Vector3 moveDirection = new Vector3(direction.x, 0, direction.y).normalized;
-            transform.position += moveDirection * _moveSpeed * Time.deltaTime;
+        if (!_isMoving) return;
 
-            _playerAnimation?.PlayMoveAnimation(moveDirection);
+        Vector3 moveDirection = new Vector3(direction.x, 0f, direction.y).normalized;
+        Vector3 desiredPos = transform.position + moveDirection * _moveSpeed * Time.deltaTime;
+
+        if (_currentPlatform != null)
+        {
+            Vector3 center = _currentPlatform.GetWorldCenter();
+            float radius = _currentPlatform.GetWorldRadius();
+            float allowedRadius = Mathf.Max(0f, radius - _confinementPadding);
+
+            Vector3 desiredXZ = new Vector3(desiredPos.x, 0f, desiredPos.z);
+            Vector3 centerXZ = new Vector3(center.x, 0f, center.z);
+
+            Vector3 offsetXZ = desiredXZ - centerXZ;
+            float distXZ = offsetXZ.magnitude;
+
+            if (distXZ > allowedRadius)
+            {
+                Vector3 dirXZ = (distXZ > 0f) ? (offsetXZ / distXZ) : Vector3.forward;
+                Vector3 clampedXZ = dirXZ * allowedRadius;
+
+                float playerY = transform.position.y;
+                desiredPos = new Vector3(centerXZ.x + clampedXZ.x, playerY, centerXZ.z + clampedXZ.z);
+            }
         }
+
+        transform.position = desiredPos;
+        _playerAnimation?.PlayRotateAnimation(moveDirection);
     }
 
     private void HandleEnterBattleZone()
     {
         EnterBattle();
+
+        _healthUI.Show(1f);
+
+        if (_playerRoadMovement != null && _playerRoadMovement.IsMoving)
+            _playerRoadMovement.OnMoveComplete += OnRoadMoveComplete_EnableControl;
+        else
+            EnableControl();
+    }
+
+    private void OnRoadMoveComplete_EnableControl()
+    {
+        if (_playerRoadMovement != null)
+            _playerRoadMovement.OnMoveComplete -= OnRoadMoveComplete_EnableControl;
+
         EnableControl();
     }
 
@@ -105,21 +160,20 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
 
         if (nearest == null) return;
 
-        Vector3 lookDir = (nearest.transform.position - transform.position).normalized;
+        Vector3 lookDir = (nearest.transform.position - transform.position);
         lookDir.y = 0;
 
-        if (lookDir != Vector3.zero)
+        if (lookDir.sqrMagnitude > 0f)
         {
-            Quaternion targetRot = Quaternion.LookRotation(lookDir);
+            Quaternion targetRot = Quaternion.LookRotation(lookDir.normalized);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRot, _rotationSpeed * Time.deltaTime);
         }
     }
-    
+
     public void SetBattlerPlatform(BattlePlatform battlePlatform)
     {
         _currentPlatform = battlePlatform;
     }
-    
     public BattleEnemy GetNearestEnemy()
     {
         if (_currentPlatform == null || _currentPlatform.ActiveEnemies.Count == 0)
@@ -129,7 +183,7 @@ public class PlayerBattle : MonoBehaviour, IBattleMovable
             .OrderBy(e => Vector3.Distance(transform.position, e.transform.position))
             .FirstOrDefault();
     }
-    
+
     private void DisableControl()
     {
         _controlEnabled = false;

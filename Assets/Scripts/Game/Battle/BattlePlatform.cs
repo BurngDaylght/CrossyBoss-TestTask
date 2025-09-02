@@ -6,24 +6,38 @@ public class BattlePlatform : MonoBehaviour
 {
     [Header("Battle Settings")]
     [SerializeField] private float _zoneSize = 1f;
-    [SerializeField] private Vector3 _zoneCenter = Vector3.zero;
+    [SerializeField] private Vector3 _zoneCenter = Vector3.zero; 
     [SerializeField] private bool _useTrigger = true;
-    
+
+    public float ZoneSize => _zoneSize;
+    public Vector3 ZoneCenter => _zoneCenter;
+
     public event Action OnPlayerEnterBattleZone;
     public event Action OnPlayerExitBattleZone;
     public event Action OnAllEnemiesDefeated;
-    
+
     private List<BattleEnemy> _activeEnemies = new List<BattleEnemy>();
     public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
-    
-    
+
     private Transform _player;
     private BattleSpawner _battleSpawner;
     private SphereCollider _collider;
 
+    public Vector3 GetWorldCenter()
+    {
+        return transform.TransformPoint(_zoneCenter);
+    }
+
+    public float GetWorldRadius()
+    {
+        float maxScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+        return _zoneSize * maxScale;
+    }
+
     private void OnValidate()
     {
         _collider = GetComponent<SphereCollider>();
+        if (_collider == null) return;
         _collider.isTrigger = _useTrigger;
         _collider.radius = _zoneSize;
         _collider.center = _zoneCenter;
@@ -32,19 +46,26 @@ public class BattlePlatform : MonoBehaviour
     private void Awake()
     {
         _collider = GetComponent<SphereCollider>();
-        _collider.isTrigger = _useTrigger;
-        
+        if (_collider != null)
+        {
+            _collider.isTrigger = _useTrigger;
+            _collider.radius = _zoneSize;
+            _collider.center = _zoneCenter;
+        }
+
         _battleSpawner = GetComponentInChildren<BattleSpawner>();
     }
 
     private void OnEnable()
     {
-        _battleSpawner.OnEnemySpawned += RegisterEnemy;
+        if (_battleSpawner != null)
+            _battleSpawner.OnEnemySpawned += RegisterEnemy;
     }
 
     private void OnDisable()
     {
-        _battleSpawner.OnEnemySpawned -= RegisterEnemy;
+        if (_battleSpawner != null)
+            _battleSpawner.OnEnemySpawned -= RegisterEnemy;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -52,10 +73,12 @@ public class BattlePlatform : MonoBehaviour
         if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
         {
             _player = player.transform;
-            _player.GetComponent<PlayerBattle>().SetBattlerPlatform(this);
-            
+            var pb = _player.GetComponent<PlayerBattle>();
+            if (pb != null)
+                pb.SetBattlerPlatform(this);
+
             OnPlayerEnterBattleZone?.Invoke();
-            _battleSpawner.SpawnEnemies(_player);
+            _battleSpawner?.SpawnEnemies(_player);
         }
     }
 
@@ -66,7 +89,7 @@ public class BattlePlatform : MonoBehaviour
             OnPlayerExitBattleZone?.Invoke();
         }
     }
-    
+
     private void RegisterEnemy(BattleEnemy enemy)
     {
         if (!_activeEnemies.Contains(enemy))
@@ -78,17 +101,16 @@ public class BattlePlatform : MonoBehaviour
             CheckAllEnemiesDefeated();
         };
     }
-    
+
     private void CheckAllEnemiesDefeated()
     {
         if (_activeEnemies.Count == 0)
             OnAllEnemiesDefeated?.Invoke();
     }
-    
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = new Color(1f, 0f, 0f, 0.25f);
-        Gizmos.matrix = transform.localToWorldMatrix;
-        Gizmos.DrawSphere(_zoneCenter, _zoneSize);
+        Gizmos.DrawSphere(transform.TransformPoint(_zoneCenter), GetWorldRadius());
     }
 }

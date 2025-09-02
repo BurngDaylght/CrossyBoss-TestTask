@@ -4,73 +4,81 @@ using Zenject;
 public class LevelUI : MonoBehaviour
 {    
     [SerializeField] private CanvasGroup _lockUI;
-    [SerializeField] private GameObject _joystick;
     
+    private StickUI _stick;
     private LevelLogic _levelLogic;   
     private BattlePlatform _battlePlatform;   
     private ChestLock _chestLock;   
     private Chest _chest;
+    private ChestLockUI _chestLockUI;
+    private CompleteLevelUI _completeLevelUI;
+    private BattleStartTextUI _battleStartTextUI;
     
     [Inject]
-    private void Construct(LevelLogic levelLogic, BattlePlatform battlePlatform, ChestLock chestLock, Chest chest)
+    private void Construct(StickUI stick, LevelLogic levelLogic, BattlePlatform battlePlatform, ChestLock chestLock, Chest chest, ChestLockUI chestLockUI, CompleteLevelUI completeLevelUI, BattleStartTextUI battleStartTextUI)
     {
+        _stick = stick;
         _levelLogic = levelLogic;
         _battlePlatform = battlePlatform;
         _chestLock = chestLock;
         _chest = chest;
+        _chestLockUI = chestLockUI;
+        _completeLevelUI = completeLevelUI;
+        _battleStartTextUI = battleStartTextUI;
     }
 
     private void Awake()
     {
-        HideJoystick();
         HideLock();
     }
 
     private void OnEnable()
     {
         _battlePlatform.OnPlayerEnterBattleZone += ShowJoystick;
-        _battlePlatform.OnPlayerExitBattleZone += HideJoystick;
+        _battlePlatform.OnPlayerEnterBattleZone += ShowBattleText;
         
         _chest.OnChestInteracted += ShowLock;
 
         _chestLock.OnLockCompleted += HideLock;
 
-        _levelLogic.OnLevelComplete += HideJoystick;
+        _levelLogic.OnLevelComplete += ShowCompleteUI;
     }
 
     private void OnDisable()
     {
         _battlePlatform.OnPlayerEnterBattleZone -= ShowJoystick;
-        _battlePlatform.OnPlayerExitBattleZone -= HideJoystick;
+        _battlePlatform.OnPlayerEnterBattleZone -= ShowBattleText;
         
         _chest.OnChestInteracted -= ShowLock;
         
         _chestLock.OnLockCompleted -= HideLock;
         
-        _levelLogic.OnLevelComplete -= HideJoystick;
+        _levelLogic.OnLevelComplete -= ShowCompleteUI;
     }
     
     private void ShowLock()
     {
-        _lockUI.alpha = 1f;
-        _lockUI.interactable = true;
-        _lockUI.blocksRaycasts = true;
+        _chestLockUI.Show(true);
     }
     
     private void HideLock()
     {
-        _lockUI.alpha = 0f;
-        _lockUI.interactable = false;
-        _lockUI.blocksRaycasts = false;
+        _chestLockUI.Show(false);
+    }
+    
+    private void ShowCompleteUI()
+    {
+        _completeLevelUI.Show();
     }
 
     private void ShowJoystick()
     {
-        _joystick.SetActive(true);
+        _stick.gameObject.SetActive(true);
+        _stick.ShowStick(true);
     }
-
-    private void HideJoystick()
+    
+    private void ShowBattleText()
     {
-        _joystick.SetActive(false);
+        _battleStartTextUI.ShowBattleText();
     }
 }

@@ -17,8 +17,16 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         if (stickHandle != null)
             _startPos = stickHandle.anchoredPosition;
 
+        HideImmediate();
+    }
+    
+    public void HideImmediate()
+    {
         if (canvasGroup != null)
             canvasGroup.alpha = 0f;
+
+        if (stickHandle != null)
+            stickHandle.anchoredPosition = _startPos;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -54,7 +62,7 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         }
     }
 
-    private void ShowStick(bool show)
+    public void ShowStick(bool show)
     {
         if (canvasGroup == null) return;
         canvasGroup.alpha = show ? 1f : 0f;

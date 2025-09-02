@@ -10,6 +10,7 @@ public class SceneInstaller : MonoInstaller
         BindInput();
         BindMovement();
         BindBattle();
+        BindUI();
     }
 
     private void BindPlayer()
@@ -47,5 +48,13 @@ public class SceneInstaller : MonoInstaller
     private void BindBattle()
     {
         Container.Bind<BattlePlatform>().FromComponentsInHierarchy().AsSingle();
+    }
+    
+    private void BindUI()
+    {
+        Container.Bind<StickUI>().FromComponentsInHierarchy().AsSingle();
+        Container.Bind<ChestLockUI>().FromComponentsInHierarchy().AsSingle();
+        Container.Bind<CompleteLevelUI>().FromComponentsInHierarchy().AsSingle();
+        Container.Bind<BattleStartTextUI>().FromComponentsInHierarchy().AsSingle();
     }
 }

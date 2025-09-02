@@ -20,7 +20,6 @@ public abstract class EnemyBase : MonoBehaviour
     
     protected virtual void Update()
     {
-        Move();
         RotateTowardsMoveDirection();
     }
 

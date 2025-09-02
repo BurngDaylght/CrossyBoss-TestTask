@@ -55,6 +55,8 @@ public class InputHandler : MonoBehaviour
 
         if (_touchField.WasSwipe)
         {
+            OnTap?.Invoke();
+            
             Vector2 swipe = _touchField.SwipeDelta;
             float horizontal = swipe.x;
             float vertical = swipe.y;

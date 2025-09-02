@@ -2,7 +2,7 @@ using UnityEngine;
 using DG.Tweening;
 using Zenject;
 
-public class EndLevelUI : MonoBehaviour
+public class CompleteLevelUI : MonoBehaviour
 {
     [Header("References")]
     [SerializeField] private CanvasGroup _endText;
@@ -22,18 +22,17 @@ public class EndLevelUI : MonoBehaviour
 
     private void OnEnable()
     {
-        _levelLogic.OnLevelComplete += Show;
+        _restartButton.OnClick += _levelLogic.RestartLevel;
     }
 
     private void OnDisable()
     {
-        _levelLogic.OnLevelComplete -= Show;
+        _restartButton.OnClick -= _levelLogic.RestartLevel;
     }
     
     private void Start()
     {
         SetImmediateHide();
-        _restartButton.OnClick += _levelLogic.RestartLevel;
     }
 
     private void OnDestroy()

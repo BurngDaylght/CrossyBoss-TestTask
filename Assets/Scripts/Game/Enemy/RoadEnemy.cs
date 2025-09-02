@@ -19,6 +19,7 @@ public class RoadEnemy : EnemyBase
     {
         base.Update();
 
+        Move();
         CheckBounds();
     }
     
