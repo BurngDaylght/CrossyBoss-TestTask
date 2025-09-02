@@ -121,7 +121,7 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
     private void OnCrashIntoEnemy(RoadEnemy enemy = null, bool isEnemyTouchFirst = false)
     {
         OnPlayerHitEnemy?.Invoke();
-                    
+                        
         if (_isCrashing) return;
         _isCrashing = true;
 
@@ -136,11 +136,15 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
         if (rb != null) rb.isKinematic = true;
 
         Vector3? crashTarget = null;
+
         if (!isEnemyTouchFirst && enemy != null)
         {
-            Vector3 dirToEnemy = (enemy.transform.position - transform.position).normalized;
-            float approachOffset = 0.3f;
-            crashTarget = enemy.transform.position - dirToEnemy * approachOffset;
+            Collider enemyCollider = enemy.GetComponent<Collider>();
+            if (enemyCollider != null)
+            {
+                Vector3 closestPoint = enemyCollider.ClosestPoint(transform.position);
+                crashTarget = closestPoint;
+            }
         }
 
         _playerAnimation.PlayDeathAnimation(crashTarget, () =>

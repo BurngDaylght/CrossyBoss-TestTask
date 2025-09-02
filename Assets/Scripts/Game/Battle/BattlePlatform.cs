@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ public class BattlePlatform : MonoBehaviour
     [SerializeField] private float _zoneSize = 1f;
     [SerializeField] private Vector3 _zoneCenter = Vector3.zero; 
     [SerializeField] private bool _useTrigger = true;
+    [SerializeField] private float _spawnDelay = 1f; 
 
     public float ZoneSize => _zoneSize;
     public Vector3 ZoneCenter => _zoneCenter;
@@ -58,14 +60,12 @@ public class BattlePlatform : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_battleSpawner != null)
-            _battleSpawner.OnEnemySpawned += RegisterEnemy;
+        _battleSpawner.OnEnemySpawned += RegisterEnemy;
     }
 
     private void OnDisable()
     {
-        if (_battleSpawner != null)
-            _battleSpawner.OnEnemySpawned -= RegisterEnemy;
+        _battleSpawner.OnEnemySpawned -= RegisterEnemy;
     }
 
     private void OnTriggerEnter(Collider other)
@@ -78,7 +78,8 @@ public class BattlePlatform : MonoBehaviour
                 pb.SetBattlerPlatform(this);
 
             OnPlayerEnterBattleZone?.Invoke();
-            _battleSpawner?.SpawnEnemies(_player);
+            
+            StartCoroutine(SpawnEnemiesWithDelay());
         }
     }
 
@@ -88,6 +89,12 @@ public class BattlePlatform : MonoBehaviour
         {
             OnPlayerExitBattleZone?.Invoke();
         }
+    }
+    
+    private IEnumerator SpawnEnemiesWithDelay()
+    {
+        yield return new WaitForSeconds(_spawnDelay);
+        _battleSpawner.SpawnEnemies(_player);
     }
 
     private void RegisterEnemy(BattleEnemy enemy)

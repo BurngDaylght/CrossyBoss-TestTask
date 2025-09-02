@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using Zenject;
 
 public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
@@ -11,6 +12,24 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     private bool _enabled = true;
 
     public bool IsPressed => _isPressed;
+
+    private LevelLogic _levelLogic;
+    
+    [Inject]
+    private void Construct(LevelLogic levelLogic)
+    {
+        _levelLogic = levelLogic;
+    }
+
+    private void OnEnable()
+    {
+        _levelLogic.OnLevelComplete += DisableStick;
+    }
+
+    private void OnDisable()
+    {
+        _levelLogic.OnLevelComplete -= DisableStick;
+    }
 
     private void Awake()
     {
@@ -60,6 +79,11 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             if (stickHandle != null)
                 stickHandle.anchoredPosition = _startPos;
         }
+    }
+    
+    private void DisableStick()
+    {
+        SetEnabled(false);
     }
 
     public void ShowStick(bool show)

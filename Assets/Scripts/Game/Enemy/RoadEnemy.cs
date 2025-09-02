@@ -14,6 +14,11 @@ public class RoadEnemy : EnemyBase
     {
         _movementSpeed = speed;
     }
+    
+    public void SetLimit(float xLimit)
+    {
+        _xLimit = xLimit;
+    }
 
     protected override void Update()
     {

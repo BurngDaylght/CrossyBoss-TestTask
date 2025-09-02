@@ -146,9 +146,13 @@ public class BattleEnemy : EnemyBase, IDamageable
 
         if (distance <= _attackRange)
         {
-            TryAttackPlayer();
-            _rb.linearVelocity = Vector3.zero;
-            _rb.angularVelocity = Vector3.zero;
+            float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
+            if (angleToPlayer <= 5f)
+            {
+                TryAttackPlayer();
+                _rb.linearVelocity = Vector3.zero;
+                _rb.angularVelocity = Vector3.zero;
+            }
             return;
         }
 
