@@ -25,7 +25,7 @@ public class PlayerAnimation : MonoBehaviour
     {
         transform.DOKill();
 
-        Sequence seq = DOTween.Sequence();
+        Sequence sequence = DOTween.Sequence();
 
         if (targetPosition.HasValue)
         {
@@ -38,10 +38,10 @@ public class PlayerAnimation : MonoBehaviour
             float speed = 5f;
             float moveDuration = Mathf.Clamp(distance / speed, 0.05f, 0.5f);
 
-            seq.Append(transform.DOMove(crashTarget, moveDuration).SetEase(Ease.OutQuad));
+            sequence.Append(transform.DOMove(crashTarget, moveDuration).SetEase(Ease.OutQuad));
         }
 
-        seq.Append(transform.DOScale(new Vector3(_initialScale.x * 1.4f, _initialScale.y * 1.4f, _initialScale.z * 0.2f), 0.25f).SetEase(Ease.OutBack))
+        sequence.Append(transform.DOScale(new Vector3(_initialScale.x * 1.4f, _initialScale.y * 1.4f, _initialScale.z * 0.2f), 0.25f).SetEase(Ease.OutBack))
         .AppendInterval(0.15f)
         .Append(transform.DOScale(Vector3.zero, 0.25f).SetEase(Ease.InBack))
         .OnComplete(() => onComplete?.Invoke());

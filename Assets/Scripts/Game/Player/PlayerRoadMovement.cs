@@ -5,6 +5,7 @@ using Zenject;
 
 public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
 {
+    [Header("Movement Settings")]
     [SerializeField] private float _stepDistance = 1f;
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private float _xLimit = 10f;
@@ -14,19 +15,17 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
     public event Action OnMoveComplete;
 
     private Vector3 _targetPosition;
-
     private bool _isMoving = false;
     [SerializeField] private bool _controlEnabled = false;
     public bool IsMoving => _isMoving;
 
     private bool _disableAfterMove = false;
+    private bool _isCrashing = false;
 
     private PlayerAnimation _playerAnimation;
     private LevelLogic _levelLogic;
     private BattlePlatform _battlePlatform;
     private Chest _chest;
-
-    private bool _isCrashing = false;
 
     [Inject]
     private void Construct(LevelLogic levelLogic, PlayerAnimation playerAnimation, BattlePlatform battlePlatform, Chest chest)
@@ -44,6 +43,7 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
         _levelLogic.OnLevelComplete += DisableControl;
         _chest.OnChestInteracted += DisableControl;
     }
+
     private void OnDisable()
     {
         _battlePlatform.OnPlayerEnterBattleZone -= DisableControl;
@@ -92,14 +92,12 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
         if (Mathf.Abs(targetPos.x) > _xLimit) return;
 
         if (Physics.BoxCast(casterCenter, halfExtents, direction, out RaycastHit hitInfo,
-                    Quaternion.identity, _stepDistance, _obstacleLayers, QueryTriggerInteraction.Ignore))
+                Quaternion.identity, _stepDistance, _obstacleLayers, QueryTriggerInteraction.Ignore))
         {
             if (hitInfo.collider != null && hitInfo.collider.gameObject != gameObject)
             {
                 if (hitInfo.collider.TryGetComponent<RoadEnemy>(out RoadEnemy enemy))
-                {
                     OnCrashIntoEnemy(enemy, false);
-                }
 
                 return;
             }
@@ -112,16 +110,14 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider.TryGetComponent<RoadEnemy>(out RoadEnemy enemy))
-        {
+        if (collision.collider.TryGetComponent<RoadEnemy>(out _))
             OnCrashIntoEnemy(null, true);
-        }
     }
 
     private void OnCrashIntoEnemy(RoadEnemy enemy = null, bool isEnemyTouchFirst = false)
     {
         OnPlayerHitEnemy?.Invoke();
-                        
+
         if (_isCrashing) return;
         _isCrashing = true;
 
@@ -129,29 +125,24 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
         _isMoving = false;
         _targetPosition = transform.position;
 
-        Collider col = GetComponent<Collider>();
-        Rigidbody rb = GetComponent<Rigidbody>();
+        Collider collider = GetComponent<Collider>();
+        Rigidbody rigidbody = GetComponent<Rigidbody>();
 
-        if (col != null) col.enabled = false;
-        if (rb != null) rb.isKinematic = true;
+        if (collider != null) collider.enabled = false;
+        if (rigidbody != null) rigidbody.isKinematic = true;
 
         Vector3? crashTarget = null;
-
         if (!isEnemyTouchFirst && enemy != null)
         {
             Collider enemyCollider = enemy.GetComponent<Collider>();
             if (enemyCollider != null)
-            {
-                Vector3 closestPoint = enemyCollider.ClosestPoint(transform.position);
-                crashTarget = closestPoint;
-            }
+                crashTarget = enemyCollider.ClosestPoint(transform.position);
         }
 
         _playerAnimation.PlayDeathAnimation(crashTarget, () =>
         {
-            if (col != null) col.enabled = true;
-            if (rb != null) rb.isKinematic = false;
-
+            if (collider != null) collider.enabled = true;
+            if (rigidbody != null) rigidbody.isKinematic = false;
             _isCrashing = false;
         });
     }
@@ -169,8 +160,7 @@ public class PlayerRoadMovement : MonoBehaviour, IRoadMovable
 
     private void EnableControl()
     {
-        if (_levelLogic != null)
-            _levelLogic.OnLevelStart -= EnableControl;
+        _levelLogic.OnLevelStart -= EnableControl;
 
         _controlEnabled = true;
     }

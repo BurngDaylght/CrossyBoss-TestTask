@@ -20,7 +20,12 @@ public class LevelLogic : MonoBehaviour
     private ChestLock _chestLock;
 
     [Inject]
-    private void Construct(SceneLoader sceneLoader, PlayerRoadMovement playerMovement, InputHandler inputHandler, PlayerStats playerStats, ChestLock chestLock)
+    private void Construct(
+        SceneLoader sceneLoader, 
+        PlayerRoadMovement playerMovement, 
+        InputHandler inputHandler, 
+        PlayerStats playerStats, 
+        ChestLock chestLock)
     {
         _sceneLoader = sceneLoader;
         _playerMovement = playerMovement;
@@ -34,7 +39,6 @@ public class LevelLogic : MonoBehaviour
         _playerMovement.OnPlayerHitEnemy += LoseLevel;
         _playerStats.OnPlayerDied += LoseLevel;
         _inputHandler.OnTap += HandleTap;
-        
         _chestLock.OnLockCompleted += CompleteLevel;
     }
 
@@ -43,7 +47,6 @@ public class LevelLogic : MonoBehaviour
         _playerMovement.OnPlayerHitEnemy -= LoseLevel;
         _playerStats.OnPlayerDied -= LoseLevel;
         _inputHandler.OnTap -= HandleTap;
-        
         _chestLock.OnLockCompleted -= CompleteLevel;
     }
 
@@ -59,7 +62,7 @@ public class LevelLogic : MonoBehaviour
             OnLevelStart?.Invoke();
         }
     }
-    
+
     public void CompleteLevel()
     {
         OnLevelComplete?.Invoke();
@@ -68,17 +71,17 @@ public class LevelLogic : MonoBehaviour
     private void LoseLevel()
     {
         if (_isRestarting) return;
-        
+
         OnLevelLosing?.Invoke();
         RestartLevel();
     }
-    
+
     public void RestartLevel()
     {
         if (_isRestarting) return;
 
         _isRestarting = true;
         OnLevelRestart?.Invoke();
-        _sceneLoader.RestartSceneWithDelay(2f);
+        _sceneLoader.RestartScene(2f);
     }
 }

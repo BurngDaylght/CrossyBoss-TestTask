@@ -18,31 +18,20 @@ public class ChestSpawner : MonoBehaviour
     {
         _battlePlatform = battlePlatform;
     }
+    
+    private void OnEnable() =>_battlePlatform.OnAllEnemiesDefeated += ShowChest;
+    private void OnDisable() => _battlePlatform.OnAllEnemiesDefeated -= ShowChest;
+
 
     private void Awake()
     {
-        if (_chest != null)
-        {
-            _initialScale = _chest.transform.localScale;
-            _initialPosition = _chest.transform.position;
-            _chest.SetActive(false);
-        }
+        _initialScale = _chest.transform.localScale;
+        _initialPosition = _chest.transform.position;
+        _chest.SetActive(false);
     }
-
-    private void OnEnable()
-    {
-        _battlePlatform.OnAllEnemiesDefeated += ShowChest;
-    }
-
-    private void OnDisable()
-    {
-        _battlePlatform.OnAllEnemiesDefeated -= ShowChest;
-    }
-
+    
     public void ShowChest()
     {
-        if (_chest == null) return;
-
         _chest.SetActive(true);
 
         Transform chestTransform = _chest.transform;
@@ -51,9 +40,9 @@ public class ChestSpawner : MonoBehaviour
         chestTransform.position = _initialPosition - new Vector3(0f, _spawnRise, 0f);
         chestTransform.localScale = _initialScale * _spawnFromScale;
 
-        Sequence seq = DOTween.Sequence();
-        seq.Append(chestTransform.DOMoveY(_initialPosition.y, _spawnDuration).SetEase(Ease.OutBack));
-        seq.Join(chestTransform.DOScale(_initialScale, _spawnDuration).SetEase(Ease.OutBack));
-        seq.Play();
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(chestTransform.DOMoveY(_initialPosition.y, _spawnDuration).SetEase(Ease.OutBack));
+        sequence.Join(chestTransform.DOScale(_initialScale, _spawnDuration).SetEase(Ease.OutBack));
+        sequence.Play();
     }
 }

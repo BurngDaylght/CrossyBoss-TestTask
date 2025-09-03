@@ -30,7 +30,7 @@ public class BattleEnemy : EnemyBase, IDamageable
     private Transform _player;
     private CustomPool<BattleEnemy> _pool;
     private float _lastAttackTime = 0f;
-    private Rigidbody _rb;
+    private Rigidbody _rigidbody;
     private Collider[] _colliders;
 
     private Vector3 _initialScale;
@@ -44,7 +44,7 @@ public class BattleEnemy : EnemyBase, IDamageable
     private void Awake()
     {
         _currentHealth = _maxHealth;
-        _rb = GetComponent<Rigidbody>();
+        _rigidbody = GetComponent<Rigidbody>();
         _colliders = GetComponentsInChildren<Collider>(true);
         _healthUI = GetComponentInChildren<HealthUI>();
 
@@ -55,7 +55,6 @@ public class BattleEnemy : EnemyBase, IDamageable
     protected override void Start()
     {
         base.Start();
-
         _healthUI.Init(transform, _maxHealth);
     }
 
@@ -63,29 +62,25 @@ public class BattleEnemy : EnemyBase, IDamageable
     {
         _currentHealth = _maxHealth;
         _isDying = false;
-
         transform.rotation = _initialRotation;
 
         transform.DOKill();
 
         if (_playSpawnAnimation)
-        {
             StartSpawnAnimation();
-        }
         else
-        {
             FinishSpawnImmediate();
-        }
     }
 
     private void FinishSpawnImmediate()
     {
         foreach (var c in _colliders) c.enabled = true;
-        _rb.isKinematic = false;
-        _rb.linearVelocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
-        transform.localScale = _initialScale;
 
+        _rigidbody.isKinematic = false;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
+
+        transform.localScale = _initialScale;
         Vector3 pos = transform.position;
         pos.y = 0.5f;
         transform.position = pos;
@@ -96,35 +91,33 @@ public class BattleEnemy : EnemyBase, IDamageable
     private void StartSpawnAnimation()
     {
         if (_isDying) return;
-        
-        _healthUI.Show();
 
+        _healthUI.Show();
         _isSpawning = true;
 
         foreach (var c in _colliders) c.enabled = false;
-        _rb.linearVelocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
-        _rb.isKinematic = true;
+
+        _rigidbody.isKinematic = true;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
 
         Vector3 targetPos = transform.position;
         targetPos.y = 0.5f;
-
         Vector3 startPos = targetPos - new Vector3(0f, _spawnRise, 0f);
         transform.position = startPos;
-
         transform.localScale = _initialScale * _spawnFromScale;
 
         transform.DOKill();
-        Sequence seq = DOTween.Sequence();
-        seq.Append(transform.DOMoveY(targetPos.y, _spawnDuration).SetEase(Ease.OutBack));
-        seq.Join(transform.DOScale(_initialScale, _spawnDuration).SetEase(Ease.OutBack));
-        seq.OnComplete(() =>
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(transform.DOMoveY(targetPos.y, _spawnDuration).SetEase(Ease.OutBack));
+        sequence.Join(transform.DOScale(_initialScale, _spawnDuration).SetEase(Ease.OutBack));
+        sequence.OnComplete(() =>
         {
             foreach (var c in _colliders) c.enabled = true;
-            _rb.isKinematic = false;
+            _rigidbody.isKinematic = false;
             _isSpawning = false;
         });
-        seq.Play();
+        sequence.Play();
     }
 
     public void SetPlayerTarget(Transform player)
@@ -132,60 +125,59 @@ public class BattleEnemy : EnemyBase, IDamageable
         _player = player;
     }
 
-    private void FixedUpdate()
+    protected override void Update()
     {
-        if (_player == null || _isDying || _isSpawning) return;
+        base.Update();
+    
+        if (_isDying || _isSpawning) return;
 
-        Vector3 raw = _player.position - transform.position;
-        raw.y = 0f;
-        Vector3 dirToPlayer = raw.normalized;
+        Vector3 dir = _player.position - transform.position;
+        dir.y = 0f;
+        Vector3 dirNormalized = dir.normalized;
 
-        Vector3 a = new Vector3(transform.position.x, 0f, transform.position.z);
-        Vector3 b = new Vector3(_player.position.x, 0f, _player.position.z);
-        float distance = Vector3.Distance(a, b);
+        float distance = Vector3.Distance(
+            new Vector3(transform.position.x, 0f, transform.position.z),
+            new Vector3(_player.position.x, 0f, _player.position.z)
+        );
 
         if (distance <= _attackRange)
         {
-            float angleToPlayer = Vector3.Angle(transform.forward, dirToPlayer);
-            if (angleToPlayer <= 5f)
+            float angle = Vector3.Angle(transform.forward, dirNormalized);
+            if (angle <= 5f)
             {
                 TryAttackPlayer();
-                _rb.linearVelocity = Vector3.zero;
-                _rb.angularVelocity = Vector3.zero;
+                _rigidbody.linearVelocity = Vector3.zero;
+                _rigidbody.angularVelocity = Vector3.zero;
             }
             return;
         }
 
-        Vector3 newPos = _rb.position + dirToPlayer * _movementSpeed * Time.fixedDeltaTime;
-        _rb.MovePosition(newPos);
+        Vector3 newPos = _rigidbody.position + dirNormalized * _movementSpeed * Time.fixedDeltaTime;
+        _rigidbody.MovePosition(newPos);
 
-        if (dirToPlayer.sqrMagnitude > 0.0001f)
+        if (dirNormalized.sqrMagnitude > 0.0001f)
         {
-            Quaternion targetRot = Quaternion.LookRotation(dirToPlayer, Vector3.up);
-            Quaternion slerp = Quaternion.Slerp(_rb.rotation, targetRot, 10f * Time.fixedDeltaTime);
-            _rb.MoveRotation(slerp);
+            Quaternion targetRot = Quaternion.LookRotation(dirNormalized, Vector3.up);
+            Quaternion slerp = Quaternion.Slerp(_rigidbody.rotation, targetRot, 10f * Time.fixedDeltaTime);
+            _rigidbody.MoveRotation(slerp);
         }
     }
 
     private void TryAttackPlayer()
     {
         if (Time.time - _lastAttackTime < _attackCooldown) return;
-
         AttackPlayer();
         _lastAttackTime = Time.time;
     }
 
     private void AttackPlayer()
     {
-        if (_player == null || _isDying || _isSpawning) return;
+        if (_isDying || _isSpawning) return;
 
         PlayAttackAnimation();
 
         IDamageable damageable = _player.GetComponent<IDamageable>();
-        if (damageable != null)
-        {
-            damageable.TakeDamage(_damage);
-        }
+        damageable?.TakeDamage(_damage);
     }
 
     private void PlayAttackAnimation()
@@ -193,8 +185,8 @@ public class BattleEnemy : EnemyBase, IDamageable
         transform.DOKill();
         Vector3 originalScale = transform.localScale;
 
-        Sequence seq = DOTween.Sequence();
-        seq.Append(transform.DOScale(originalScale * _attackAnimScale, _attackAnimDuration).SetEase(Ease.OutBack))
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(transform.DOScale(originalScale * _attackAnimScale, _attackAnimDuration).SetEase(Ease.OutBack))
            .Append(transform.DOScale(originalScale, _attackAnimDuration).SetEase(Ease.InBack));
     }
 
@@ -229,7 +221,6 @@ public class BattleEnemy : EnemyBase, IDamageable
         _isDying = true;
 
         OnEnemyDied?.Invoke();
-
         PlayDeathAnimation();
     }
 
@@ -238,23 +229,23 @@ public class BattleEnemy : EnemyBase, IDamageable
         transform.DOKill();
 
         foreach (var c in _colliders) c.enabled = false;
-        _rb.linearVelocity = Vector3.zero;
-        _rb.angularVelocity = Vector3.zero;
-        _rb.isKinematic = true;
 
-        Sequence seq = DOTween.Sequence();
+        _rigidbody.isKinematic = true;
+        _rigidbody.linearVelocity = Vector3.zero;
+        _rigidbody.angularVelocity = Vector3.zero;
 
-        seq.Append(transform.DOMoveY(transform.position.y + _deathRise, _deathDuration * 0.5f).SetEase(Ease.OutCubic));
-        seq.Join(transform.DORotate(new Vector3(0f, _deathRotateDegrees, 0f), _deathDuration, RotateMode.LocalAxisAdd));
-        seq.Join(transform.DOScale(Vector3.zero, _deathDuration).SetEase(Ease.InBack));
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(transform.DOMoveY(transform.position.y + _deathRise, _deathDuration * 0.5f).SetEase(Ease.OutCubic));
+        sequence.Join(transform.DORotate(new Vector3(0f, _deathRotateDegrees, 0f), _deathDuration, RotateMode.LocalAxisAdd));
+        sequence.Join(transform.DOScale(Vector3.zero, _deathDuration).SetEase(Ease.InBack));
 
-        seq.OnComplete(() =>
+        sequence.OnComplete(() =>
         {
-            _rb.isKinematic = false;
+            _rigidbody.isKinematic = false;
             ReturnToPool();
         });
 
-        seq.Play();
+        sequence.Play();
     }
 
     private void OnDrawGizmosSelected()

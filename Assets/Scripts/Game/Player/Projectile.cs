@@ -3,6 +3,7 @@ using DG.Tweening;
 
 public class Projectile : MonoBehaviour
 {
+    [Header("Projectile Settings")]
     [SerializeField] private float _speed = 10f;
     [SerializeField] private float _damage = 1f;
     [SerializeField] private float _lifeTime = 5f;
@@ -29,7 +30,6 @@ public class Projectile : MonoBehaviour
         _direction = direction.normalized;
         _spawnTime = Time.time;
         _isReturning = false;
-
         transform.localScale = _startScale;
     }
 
@@ -64,10 +64,8 @@ public class Projectile : MonoBehaviour
         if (_isReturning) return;
 
         _isReturning = true;
-        transform.DOScale(Vector3.zero, _shrinkDuration).SetEase(Ease.InBack).OnComplete(() =>
-        {
-            ReturnToPool();
-        });
+        transform.DOKill();
+        transform.DOScale(Vector3.zero, _shrinkDuration).SetEase(Ease.InBack).OnComplete(ReturnToPool);
     }
 
     private void ReturnToPool()

@@ -3,6 +3,7 @@ using Zenject;
 
 public class PlayerWeapon : MonoBehaviour
 {
+    [Header("Weapon Settings")]
     [SerializeField] private Projectile _projectilePrefab;
     [SerializeField] private Transform _shotPoint;
     [SerializeField] private float _fireRate = 1f;
@@ -10,11 +11,11 @@ public class PlayerWeapon : MonoBehaviour
     [SerializeField] private Transform _poolParent;
 
     private float _nextFireTime;
+    private bool _canShoot = true;
+
     private PlayerBattle _playerBattle;
     private LevelLogic _levelLogic;
     private CustomPool<Projectile> _projectilePool;
-
-    private bool _canShoot = true;
 
     [Inject]
     private void Construct(PlayerBattle playerBattle, LevelLogic levelLogic)
@@ -32,16 +33,14 @@ public class PlayerWeapon : MonoBehaviour
     {
         _playerBattle.OnStartMoving += HandleStartShoot;
         _playerBattle.OnStopMoving += HandleStopShoot;
-
         _levelLogic.OnLevelLosing += HandleStopShoot;
     }
-    
+
     private void OnDisable()
     {
         _playerBattle.OnStartMoving -= HandleStartShoot;
         _playerBattle.OnStopMoving -= HandleStopShoot;
-        
-        _levelLogic.OnLevelLosing += HandleStopShoot;
+        _levelLogic.OnLevelLosing -= HandleStopShoot;
     }
 
     private void Update()
@@ -51,35 +50,28 @@ public class PlayerWeapon : MonoBehaviour
         BattleEnemy target = _playerBattle.GetNearestEnemy();
         if (target == null) return;
 
-        if (Time.time >= _nextFireTime)
+        if (Time.time >= _nextFireTime && IsFacingTarget(target))
         {
-            if (IsFacingTarget(target))
-            {
-                Shoot(target);
-                _nextFireTime = Time.time + _fireRate;
-            }
+            Shoot(target);
+            _nextFireTime = Time.time + _fireRate;
         }
     }
 
     private bool IsFacingTarget(BattleEnemy target)
     {
-        if (target == null || _playerBattle == null || _shotPoint == null) return false;
-
         Vector3 toTarget = target.transform.position - _shotPoint.position;
         Vector3 toTargetXZ = new Vector3(toTarget.x, 0f, toTarget.z);
         if (toTargetXZ.sqrMagnitude < 0.0001f) return true;
 
         Vector3 forwardXZ = new Vector3(_playerBattle.transform.forward.x, 0f, _playerBattle.transform.forward.z).normalized;
-
         float angle = Vector3.Angle(forwardXZ, toTargetXZ.normalized);
 
-        return angle <= 0f;
+        return angle <= 5f;
     }
 
     private void Shoot(BattleEnemy target)
     {
         Projectile projectile = _projectilePool.Get();
-
         Vector3 dir = (target.transform.position - _shotPoint.position).normalized;
 
         projectile.transform.position = _shotPoint.position + dir * 0.1f;
@@ -89,13 +81,6 @@ public class PlayerWeapon : MonoBehaviour
         projectile.Shoot(dir);
     }
 
-    private void HandleStartShoot()
-    {
-        _canShoot = false;
-    }
-
-    private void HandleStopShoot()
-    {
-        _canShoot = true;
-    }
+    private void HandleStartShoot() => _canShoot = false;
+    private void HandleStopShoot() => _canShoot = true;
 }

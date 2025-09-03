@@ -4,8 +4,8 @@ using Zenject;
 
 public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
-    [SerializeField] private RectTransform stickHandle;
-    [SerializeField] private CanvasGroup canvasGroup;
+    [SerializeField] private RectTransform _stickHandle;
+    [SerializeField] private CanvasGroup _canvasGroup;
 
     private Vector2 _startPos;
     private bool _isPressed = false;
@@ -33,19 +33,16 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     private void Awake()
     {
-        if (stickHandle != null)
-            _startPos = stickHandle.anchoredPosition;
+        _startPos = _stickHandle.anchoredPosition;
 
         HideImmediate();
     }
     
     public void HideImmediate()
     {
-        if (canvasGroup != null)
-            canvasGroup.alpha = 0f;
+        _canvasGroup.alpha = 0f;
 
-        if (stickHandle != null)
-            stickHandle.anchoredPosition = _startPos;
+        _stickHandle.anchoredPosition = _startPos;
     }
 
     public void OnPointerDown(PointerEventData eventData)
@@ -63,8 +60,7 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         _isPressed = false;
         ShowStick(false);
 
-        if (stickHandle != null)
-            stickHandle.anchoredPosition = _startPos;
+        _stickHandle.anchoredPosition = _startPos;
     }
 
     public void SetEnabled(bool value)
@@ -76,8 +72,7 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             _isPressed = false;
             ShowStick(false);
 
-            if (stickHandle != null)
-                stickHandle.anchoredPosition = _startPos;
+            _stickHandle.anchoredPosition = _startPos;
         }
     }
     
@@ -85,10 +80,14 @@ public class StickUI : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         SetEnabled(false);
     }
+        
+    private void EnableStick()
+    {
+        SetEnabled(false);
+    }
 
     public void ShowStick(bool show)
     {
-        if (canvasGroup == null) return;
-        canvasGroup.alpha = show ? 1f : 0f;
+        _canvasGroup.alpha = show ? 1f : 0f;
     }
 }

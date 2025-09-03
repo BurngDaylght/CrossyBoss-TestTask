@@ -5,8 +5,8 @@ using Zenject;
 public class Chest : MonoBehaviour
 {
     public event Action OnChestInteracted;
+    
     private Animator _animator;
-
     private LevelLogic _levelLogic;
     
     [Inject]
@@ -32,7 +32,7 @@ public class Chest : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
+        if (other.TryGetComponent<PlayerStats>(out _))
         {
             OnChestInteracted?.Invoke();
         }

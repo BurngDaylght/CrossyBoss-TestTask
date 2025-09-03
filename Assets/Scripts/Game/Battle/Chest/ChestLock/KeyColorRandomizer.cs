@@ -11,16 +11,17 @@ public struct ChestKeyPair
 
 public class KeyColorRandomizer : MonoBehaviour
 {
-    [SerializeField] private ChestLock _lock;
     [SerializeField] private List<KeyDrag> _keyDragComponents;
     [SerializeField] private ChestKeyPair[] _possiblePairs;
 
     private Chest _chest;
+    private ChestLock _chestLock;
     
     [Inject]
-    private void Construct(Chest chest)
+    private void Construct(Chest chest, ChestLock chestLock)
     {
         _chest = chest;
+        _chestLock = chestLock;
     }
 
     private void OnEnable()
@@ -43,11 +44,14 @@ public class KeyColorRandomizer : MonoBehaviour
 
         ChestKeyPair pair = _possiblePairs[Random.Range(0, _possiblePairs.Length)];
 
-        _lock.SetRandomSprite(pair.lockSprite);
-        _lock.SetAcceptableKeys(new Sprite[] { pair.keySprite });
+        _chestLock.SetRandomSprite(pair.lockSprite);
+        _chestLock.SetAcceptableKeys(new Sprite[] { pair.keySprite });
 
         List<int> indices = new List<int>();
-        for (int i = 0; i < _keyDragComponents.Count; i++) indices.Add(i);
+        for (int i = 0; i < _keyDragComponents.Count; i++) 
+        {
+            indices.Add(i);
+        }
 
         for (int i = 0; i < 3; i++)
         {

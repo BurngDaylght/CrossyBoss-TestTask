@@ -20,15 +20,9 @@ public class CompleteLevelUI : MonoBehaviour
         _levelLogic = levelLogic;
     }
 
-    private void OnEnable()
-    {
-        _restartButton.OnClick += _levelLogic.RestartLevel;
-    }
+    private void OnEnable() => _restartButton.OnClick += _levelLogic.RestartLevel;
 
-    private void OnDisable()
-    {
-        _restartButton.OnClick -= _levelLogic.RestartLevel;
-    }
+    private void OnDisable() => _restartButton.OnClick -= _levelLogic.RestartLevel;
     
     private void Start()
     {

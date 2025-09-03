@@ -24,16 +24,10 @@ public class ScreenFaderUI : MonoBehaviour
         _levelLogic = levelLogic;
     }
 
-    private void OnEnable()
-    {
-        _levelLogic.OnLevelRestart += FadeIn;
-    }
+    private void OnEnable() => _levelLogic.OnLevelRestart += FadeIn;
 
-    private void OnDisable()
-    {
-        _levelLogic.OnLevelRestart -= FadeIn;
-    }
-
+    private void OnDisable() => _levelLogic.OnLevelRestart -= FadeIn;
+    
     private void Start()
     {
         _canvasGroup = GetComponent<CanvasGroup>();

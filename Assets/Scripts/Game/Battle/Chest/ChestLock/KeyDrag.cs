@@ -9,12 +9,12 @@ public class KeyDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
     public Image keyImage;
 
     [Header("Animation Settings")]
-    [SerializeField] private float moveDuration = 0.5f;
-    [SerializeField] private Ease moveEase = Ease.InOutQuad;
-    [SerializeField] private float scaleDuration = 0.5f;
-    [SerializeField] private Ease scaleEase = Ease.InQuad;
-    [SerializeField] private float dragScaleFactor = 1.5f;
-    [SerializeField] private float dragRotationAngle = 45f;
+    [SerializeField] private float _moveDuration = 0.5f;
+    [SerializeField] private Ease _moveEase = Ease.InOutQuad;
+    [SerializeField] private float _scaleDuration = 0.5f;
+    [SerializeField] private Ease _scaleEase = Ease.InQuad;
+    [SerializeField] private float _dragScaleFactor = 1.5f;
+    [SerializeField] private float _dragRotationAngle = 45f;
 
     private Vector2 _startPos;
     private Transform _originalParent;
@@ -31,8 +31,6 @@ public class KeyDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
         _originalSiblingIndex = transform.GetSiblingIndex();
         _canvas = GetComponentInParent<Canvas>();
         _canvasGroup = GetComponent<CanvasGroup>();
-        if (_canvasGroup == null)
-            _canvasGroup = gameObject.AddComponent<CanvasGroup>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
@@ -48,8 +46,8 @@ public class KeyDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
 
         transform.SetAsLastSibling();
 
-        _rectTransform.DOScale(dragScaleFactor, 0.2f).SetEase(Ease.OutBack);
-        _rectTransform.DORotate(new Vector3(0, 0, dragRotationAngle), 0.2f).SetEase(Ease.OutBack);
+        _rectTransform.DOScale(_dragScaleFactor, 0.2f).SetEase(Ease.OutBack);
+        _rectTransform.DORotate(new Vector3(0, 0, _dragRotationAngle), 0.2f).SetEase(Ease.OutBack);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -106,14 +104,14 @@ public class KeyDrag : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragH
         Vector3 targetPos = lockArea.transform.position;
         _rectTransform.SetParent(_canvas.transform, true);
 
-        _rectTransform.DOMove(targetPos, moveDuration)
-            .SetEase(moveEase)
+        _rectTransform.DOMove(targetPos, _moveDuration)
+            .SetEase(_moveEase)
             .OnComplete(() =>
             {
                 lockArea.AddKey(keyImage.sprite);
                 gameObject.SetActive(false);
             });
 
-        _rectTransform.DOScale(0f, scaleDuration).SetEase(scaleEase);
+        _rectTransform.DOScale(0f, _scaleDuration).SetEase(_scaleEase);
     }
 }

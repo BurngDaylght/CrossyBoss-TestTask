@@ -3,61 +3,34 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(SphereCollider))]
 public class BattlePlatform : MonoBehaviour
 {
     [Header("Battle Settings")]
-    [SerializeField] private float _zoneSize = 1f;
-    [SerializeField] private Vector3 _zoneCenter = Vector3.zero; 
+    [SerializeField, Min(0.1f)] private float _zoneSize = 1f;
+    [SerializeField] private Vector3 _zoneCenter = Vector3.zero;
     [SerializeField] private bool _useTrigger = true;
-    [SerializeField] private float _spawnDelay = 1f; 
+    [SerializeField, Min(0f)] private float _spawnDelay = 1f;
 
     public float ZoneSize => _zoneSize;
     public Vector3 ZoneCenter => _zoneCenter;
+    public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
 
     public event Action OnPlayerEnterBattleZone;
     public event Action OnPlayerExitBattleZone;
     public event Action OnAllEnemiesDefeated;
 
     private List<BattleEnemy> _activeEnemies = new List<BattleEnemy>();
-    public IReadOnlyList<BattleEnemy> ActiveEnemies => _activeEnemies;
-
     private Transform _player;
     private BattleSpawner _battleSpawner;
     private SphereCollider _collider;
-
-    public Vector3 GetWorldCenter()
-    {
-        return transform.TransformPoint(_zoneCenter);
-    }
-
-    public float GetWorldRadius()
-    {
-        float maxScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
-        return _zoneSize * maxScale;
-    }
-
+    
     private void OnValidate()
     {
         _collider = GetComponent<SphereCollider>();
-        if (_collider == null) return;
-        _collider.isTrigger = _useTrigger;
-        _collider.radius = _zoneSize;
-        _collider.center = _zoneCenter;
+        ConfigureCollider();
     }
-
-    private void Awake()
-    {
-        _collider = GetComponent<SphereCollider>();
-        if (_collider != null)
-        {
-            _collider.isTrigger = _useTrigger;
-            _collider.radius = _zoneSize;
-            _collider.center = _zoneCenter;
-        }
-
-        _battleSpawner = GetComponentInChildren<BattleSpawner>();
-    }
-
+    
     private void OnEnable()
     {
         _battleSpawner.OnEnemySpawned += RegisterEnemy;
@@ -67,34 +40,55 @@ public class BattlePlatform : MonoBehaviour
     {
         _battleSpawner.OnEnemySpawned -= RegisterEnemy;
     }
+    
+    private void Awake()
+    {
+        _collider = GetComponent<SphereCollider>();
+        ConfigureCollider();
+
+        _battleSpawner = GetComponentInChildren<BattleSpawner>();
+    }
+
+    private void ConfigureCollider()
+    {
+        _collider.isTrigger = _useTrigger;
+        _collider.radius = _zoneSize;
+        _collider.center = _zoneCenter;
+    }
+
+    public Vector3 GetWorldCenter() => transform.TransformPoint(_zoneCenter);
+
+    public float GetWorldRadius()
+    {
+        float maxScale = Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z);
+        return _zoneSize * maxScale;
+    }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
         {
             _player = player.transform;
-            var pb = _player.GetComponent<PlayerBattle>();
-            if (pb != null)
-                pb.SetBattlerPlatform(this);
+
+            var playerBattle = _player.GetComponent<PlayerBattle>();
+            playerBattle?.SetBattlerPlatform(this);
 
             OnPlayerEnterBattleZone?.Invoke();
-            
+
             StartCoroutine(SpawnEnemiesWithDelay());
         }
     }
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.TryGetComponent<PlayerStats>(out PlayerStats player))
-        {
+        if (other.TryGetComponent<PlayerStats>(out _))
             OnPlayerExitBattleZone?.Invoke();
-        }
     }
-    
+
     private IEnumerator SpawnEnemiesWithDelay()
     {
         yield return new WaitForSeconds(_spawnDelay);
-        _battleSpawner.SpawnEnemies(_player);
+        _battleSpawner?.SpawnEnemies(_player);
     }
 
     private void RegisterEnemy(BattleEnemy enemy)
@@ -105,14 +99,9 @@ public class BattlePlatform : MonoBehaviour
         enemy.OnEnemyDied += () =>
         {
             _activeEnemies.Remove(enemy);
-            CheckAllEnemiesDefeated();
+            if (_activeEnemies.Count == 0)
+                OnAllEnemiesDefeated?.Invoke();
         };
-    }
-
-    private void CheckAllEnemiesDefeated()
-    {
-        if (_activeEnemies.Count == 0)
-            OnAllEnemiesDefeated?.Invoke();
     }
 
     private void OnDrawGizmosSelected()

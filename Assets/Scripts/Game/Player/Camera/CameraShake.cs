@@ -5,8 +5,7 @@ using Zenject;
 public class CameraShake : MonoBehaviour
 {
     [SerializeField] private float _duration;
-    [Range(0f, 100f)]
-    [SerializeField] private float _shakingForce;
+    [Range(0f, 100f)] [SerializeField] private float _shakingForce;
     [SerializeField] private AnimationCurve _curve;
 
     private LevelLogic _levelLogic;

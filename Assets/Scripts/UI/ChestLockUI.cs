@@ -1,5 +1,6 @@
 using UnityEngine;
 using DG.Tweening;
+using Zenject;
 
 public class ChestLockUI : MonoBehaviour
 {
@@ -9,10 +10,29 @@ public class ChestLockUI : MonoBehaviour
 
     [Header("Animation Settings")]
     [SerializeField] private float _duration = 0.4f;
-    [SerializeField] private Ease ease = Ease.OutBack;
+    [SerializeField] private Ease _ease = Ease.OutBack;
 
     private Vector3 _hiddenScale = Vector3.zero;
     private Vector3 _shownScale = Vector3.one;
+    
+    private ChestLock _chestLock;
+    
+    [Inject]
+    private void Construct(ChestLock chestLock)
+    {
+        _chestLock = chestLock;
+    }
+
+    private void OnEnable()
+    {
+        _chestLock.OnLockCompleted += DisableRaycast;
+    }
+
+    private void OnDisable()
+    {
+        _chestLock.OnLockCompleted -= DisableRaycast;
+    }
+        
 
     private void Awake()
     {
@@ -41,7 +61,7 @@ public class ChestLockUI : MonoBehaviour
         {
             group.DOFade(1f, _duration * 0.6f);
             group.transform.DOScale(_shownScale, _duration)
-                .SetEase(ease);
+                .SetEase(_ease);
         }
         else
         {
@@ -50,19 +70,19 @@ public class ChestLockUI : MonoBehaviour
                 .SetEase(Ease.InBack);
         }
     }
+    
+    private void DisableRaycast()
+    {
+        _keyPanel.interactable = false;
+        _lockPanel.interactable = false;
+    }
 
     private void OnDestroy()
     {
-        if (_lockPanel != null)
-        {
-            _lockPanel.DOKill();
-            _lockPanel.transform.DOKill();
-        }
+        _lockPanel.DOKill();
+        _lockPanel.transform.DOKill();
 
-        if (_keyPanel != null)
-        {
-            _keyPanel.DOKill();
-            _keyPanel.transform.DOKill();
-        }
+        _keyPanel.DOKill();
+        _keyPanel.transform.DOKill();
     }
 }

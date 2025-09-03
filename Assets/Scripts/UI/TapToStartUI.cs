@@ -13,12 +13,10 @@ public class TapToStartUI : MonoBehaviour
     private Tween _idleTween;
     
     private InputHandler _inputHandler;
-    private LevelLogic _levelLogic;
 
     [Inject]
-    private void Construct(LevelLogic levelLogic, InputHandler inputHandler)
+    private void Construct(InputHandler inputHandler)
     {
-        _levelLogic = levelLogic;
         _inputHandler = inputHandler;
     }
     
@@ -30,6 +28,11 @@ public class TapToStartUI : MonoBehaviour
     private void OnEnable()
     {
         _inputHandler.OnTap += HandleLevelStart;
+    }
+    
+    private void OnDisable()
+    {
+        _inputHandler.OnTap -= HandleLevelStart;
     }
     
     private void Start()

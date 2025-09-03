@@ -7,11 +7,11 @@ public class CameraFollow : MonoBehaviour
     [Range(0, 15)] [SerializeField] private float _speedMovement = 3f;
     [Range(0, 15)] [SerializeField] private float _speedRotation = 5f;
 
-    [Header("Offsets (Normal)")]
+    [Header("Road Offsets")]
     [SerializeField] private Vector3 _normalPositionOffset;
     [SerializeField] private Vector3 _normalLookOffset = Vector3.zero;
 
-    [Header("Offsets (Battle)")]
+    [Header("Battle Offset")]
     [SerializeField] private Vector3 _battlePositionOffset;
     [SerializeField] private Vector3 _battleLookOffset = Vector3.zero;
 
@@ -53,20 +53,14 @@ public class CameraFollow : MonoBehaviour
 
     private void OnEnable()
     {
-        if (_battlePlatform != null)
-        {
-            _battlePlatform.OnPlayerEnterBattleZone += SwitchToBattleOffset;
-            _battlePlatform.OnPlayerExitBattleZone += SwitchToNormalOffset;
-        }
+        _battlePlatform.OnPlayerEnterBattleZone += SwitchToBattleOffset;
+        _battlePlatform.OnPlayerExitBattleZone += SwitchToNormalOffset;
     }
 
     private void OnDisable()
     {
-        if (_battlePlatform != null)
-        {
-            _battlePlatform.OnPlayerEnterBattleZone -= SwitchToBattleOffset;
-            _battlePlatform.OnPlayerExitBattleZone -= SwitchToNormalOffset;
-        }
+        _battlePlatform.OnPlayerEnterBattleZone -= SwitchToBattleOffset;
+        _battlePlatform.OnPlayerExitBattleZone -= SwitchToNormalOffset;
     }
 
     private void LateUpdate()

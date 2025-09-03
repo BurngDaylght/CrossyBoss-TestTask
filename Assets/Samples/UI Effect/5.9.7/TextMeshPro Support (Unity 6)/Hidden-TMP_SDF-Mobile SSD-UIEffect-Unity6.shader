@@ -113,7 +113,7 @@ SubShader {
 
 		#include "UnityCG.cginc"
 		#include "UnityUI.cginc"
-		#include "Assets/TextMesh Pro/Shaders/TMPro_Properties.cginc"
+		#include "Assets/ThirdParty/TextMesh Pro/Shaders/TMPro_Properties.cginc"
 
 		struct vertex_t {
 		    UNITY_VERTEX_INPUT_INSTANCE_ID

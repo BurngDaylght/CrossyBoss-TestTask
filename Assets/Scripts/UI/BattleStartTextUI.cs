@@ -20,22 +20,20 @@ public class BattleStartTextUI : MonoBehaviour
 
     public void ShowBattleText(string text = "BATTLE!")
     {
-        if (_battleText == null) return;
-
         _battleText.text = text;
         _battleText.DOKill();
         _battleText.alpha = 0f;
         _battleText.transform.localScale = Vector3.one;
 
-        Sequence seq = DOTween.Sequence();
-        seq.Append(_battleText.DOFade(1f, _showDuration));
-        seq.Join(_battleText.transform.DOScale(Vector3.one * _punchScale, _showDuration).SetEase(Ease.OutBack));
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(_battleText.DOFade(1f, _showDuration));
+        sequence.Join(_battleText.transform.DOScale(Vector3.one * _punchScale, _showDuration).SetEase(Ease.OutBack));
 
-        seq.AppendInterval(_stayDuration);
+        sequence.AppendInterval(_stayDuration);
 
-        seq.Append(_battleText.DOFade(0f, _hideDuration));
-        seq.Join(_battleText.transform.DOScale(Vector3.one, _hideDuration));
+        sequence.Append(_battleText.DOFade(0f, _hideDuration));
+        sequence.Join(_battleText.transform.DOScale(Vector3.one, _hideDuration));
 
-        seq.Play();
+        sequence.Play();
     }
 }

@@ -9,9 +9,10 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6857452953952421076}
+  - component: {fileID: 6561171605951853676}
   - component: {fileID: 255880169238600317}
   - component: {fileID: 837863956874525264}
-  - component: {fileID: 6561171605951853676}
+  - component: {fileID: 2736503893532621697}
   m_Layer: 0
   m_Name: Key
   m_TagString: Untagged
@@ -38,6 +39,25 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 6}
   m_SizeDelta: {x: 82.223, y: 96.0365}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &6561171605951853676
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 725688379432195385}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5f719adc8815d444aa5cb1f6de8c52f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyImage: {fileID: 837863956874525264}
+  _moveDuration: 0.5
+  _moveEase: 7
+  _scaleDuration: 0.5
+  _scaleEase: 5
+  _dragScaleFactor: 1.5
+  _dragRotationAngle: 45
 --- !u!222 &255880169238600317
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -76,25 +96,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &6561171605951853676
-MonoBehaviour:
+--- !u!225 &2736503893532621697
+CanvasGroup:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 725688379432195385}
   m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c5f719adc8815d444aa5cb1f6de8c52f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  keyImage: {fileID: 837863956874525264}
-  moveDuration: 0.5
-  moveEase: 7
-  scaleDuration: 0.5
-  scaleEase: 5
-  dragScaleFactor: 1.5
-  dragRotationAngle: 45
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &2060519365120985284
 GameObject:
   m_ObjectHideFlags: 0

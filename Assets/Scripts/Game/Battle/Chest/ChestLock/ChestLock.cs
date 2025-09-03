@@ -12,21 +12,20 @@ public class ChestLock : MonoBehaviour
     [SerializeField] private int _requiredKeys = 3;
 
     [Header("Animation Settings")]
-    [SerializeField] private Vector3 punchScale = Vector3.one * 0.25f;
-    [SerializeField] private float punchDuration = 0.25f;
-    [SerializeField] private int punchVibrato = 5;
-    [SerializeField] private float punchElasticity = 0.5f;
+    [SerializeField] private Vector3 _punchScale = Vector3.one * 0.25f;
+    [SerializeField] private float _punchDuration = 0.5f;
+    [SerializeField] private int _punchVibrato = 5;
+    [SerializeField] private float _punchElasticity = 0.5f;
 
-    [Header("Reject (Wrong Key) Feedback")]
-    [SerializeField] private Color rejectColor = Color.red;
-    [SerializeField] private float rejectColorDuration = 0.12f;
-    [SerializeField] private Vector3 rejectPunchPosition = new Vector3(10f, 0f, 0f);
-    [SerializeField] private float rejectPunchDuration = 0.35f;
-    [SerializeField] private int rejectPunchVibrato = 10;
-    [SerializeField] private float rejectPunchElasticity = 0.8f;
+    [Header("Wrong Key")]
+    [SerializeField] private Color _rejectColor = Color.red;
+    [SerializeField] private float _rejectColorDuration = 0.12f;
+    [SerializeField] private Vector3 _rejectPunchPosition = new Vector3(10f, 0f, 0f);
+    [SerializeField] private float _rejectPunchDuration = 0.35f;
+    [SerializeField] private int _rejectPunchVibrato = 10;
+    [SerializeField] private float _rejectPunchElasticity = 0.8f;
 
     private int _currentCount = 0;
-    private Sprite _lockSprite;
     private Sprite[] _acceptableKeySprites;
     private Color _originalColor;
 
@@ -34,16 +33,20 @@ public class ChestLock : MonoBehaviour
 
     private void Awake()
     {
-        _lockSprite = _lockImage.sprite;
         _originalColor = _lockImage.color;
         UpdateCounter();
     }
 
     public bool CanAcceptKey(Sprite keySprite)
     {
-        if (_acceptableKeySprites == null || _acceptableKeySprites.Length == 0) return false;
-        foreach (var s in _acceptableKeySprites)
-            if (s == keySprite) return true;
+        foreach (Sprite sprite in _acceptableKeySprites)
+        {
+            if (sprite == keySprite)
+            {
+                return true;
+            }
+        }
+
         return false;
     }
 
@@ -69,13 +72,11 @@ public class ChestLock : MonoBehaviour
 
     private void UpdateCounter()
     {
-        if (_counterText != null)
-            _counterText.text = $"{_currentCount} / {_requiredKeys}";
+        _counterText.text = $"{_currentCount} / {_requiredKeys}";
     }
 
     public void SetRandomSprite(Sprite sprite)
     {
-        _lockSprite = sprite;
         _lockImage.sprite = sprite;
         _currentCount = 0;
         UpdateCounter();
@@ -85,18 +86,18 @@ public class ChestLock : MonoBehaviour
     {
         RectTransform lockRect = _lockImage.rectTransform;
         lockRect.DOKill();
-        lockRect.DOPunchScale(punchScale, punchDuration, punchVibrato, punchElasticity);
+        lockRect.DOPunchScale(_punchScale, _punchDuration, _punchVibrato, _punchElasticity);
     }
 
     public void RejectKeyFeedback()
     {
         _lockImage.DOKill();
-        Sequence seq = DOTween.Sequence();
-        seq.Append(_lockImage.DOColor(rejectColor, rejectColorDuration));
-        seq.Append(_lockImage.DOColor(_originalColor, rejectColorDuration));
+        Sequence sequence = DOTween.Sequence();
+        sequence.Append(_lockImage.DOColor(_rejectColor, _rejectColorDuration));
+        sequence.Append(_lockImage.DOColor(_originalColor, _rejectColorDuration));
 
         RectTransform lockRect = _lockImage.rectTransform;
         lockRect.DOKill();
-        lockRect.DOPunchPosition(rejectPunchPosition, rejectPunchDuration, rejectPunchVibrato, rejectPunchElasticity);
+        lockRect.DOPunchPosition(_rejectPunchPosition, _rejectPunchDuration, _rejectPunchVibrato, _rejectPunchElasticity);
     }
 }

@@ -4,21 +4,23 @@ using Zenject;
 
 public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    public Vector2 SwipeDelta { get; private set; } = Vector2.zero;
-    public bool WasTap { get; private set; } = false;
-    public bool WasSwipe { get; private set; } = false;
-
+    [Header("Tap & Swipe Settings")]
     [SerializeField] private float _tapMoveThreshold = 15f;
     [SerializeField] private float _tapTimeThreshold = 0.25f;
 
+    public Vector2 SwipeDelta { get; private set; }
+    public bool WasTap { get; private set; }
+    public bool WasSwipe { get; private set; }
+
     private Vector2 _startTouch;
-    private float _touchStartTime;
     private Vector2 _currentDragDelta;
-    private bool _isSwiping = false;
+    private float _touchStartTime;
+
+    private bool _isSwiping;
     private bool _isEnabled = true;
 
     private LevelLogic _levelLogic;
-    
+
     [Inject]
     private void Construct(LevelLogic levelLogic)
     {
@@ -36,26 +38,30 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoi
         _levelLogic.OnLevelStart -= EnableInput;
         _levelLogic.OnLevelComplete -= DisableInput;
     }
-    
+
     public void OnPointerDown(PointerEventData eventData)
     {
+        if (!_isEnabled) return;
+
         _isSwiping = true;
         _startTouch = eventData.position;
         _touchStartTime = Time.time;
         _currentDragDelta = Vector2.zero;
+
         WasTap = false;
         WasSwipe = false;
     }
 
     public void OnDrag(PointerEventData eventData)
     {
-        if (!_isSwiping) return;
+        if (!_isEnabled || !_isSwiping) return;
+
         _currentDragDelta = eventData.position - _startTouch;
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!_isSwiping) return;
+        if (!_isEnabled || !_isSwiping) return;
 
         Vector2 endTouch = eventData.position;
         Vector2 delta = endTouch - _startTouch;
@@ -93,7 +99,7 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoi
     {
         return _currentDragDelta;
     }
-    
+
     public void EnableInput()
     {
         _isEnabled = true;
@@ -104,7 +110,7 @@ public class TouchField : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoi
         _isEnabled = false;
         ResetInputState();
     }
-    
+
     private void ResetInputState()
     {
         WasTap = false;

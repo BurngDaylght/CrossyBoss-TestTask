@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class GameInitializationSettings : MonoBehaviour
 {
-    [Range(0, 240)]
+    [Range(-1, 240)]
     [SerializeField] private int _targetFrameRate = 144;
     [SerializeField] private bool _vSyncCount;
     [SerializeField] private bool cursorLocked;

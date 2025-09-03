@@ -14,21 +14,25 @@ public class RoadEnemy : EnemyBase
     {
         _movementSpeed = speed;
     }
-    
+
     public void SetLimit(float xLimit)
     {
         _xLimit = xLimit;
     }
 
+    public void SetPool(CustomPool<RoadEnemy> pool)
+    {
+        _pool = pool;
+        CancelInvoke();
+    }
+
     protected override void Update()
     {
         base.Update();
-
         Move();
         CheckBounds();
     }
-    
-    
+
     private void CheckBounds()
     {
         if (Mathf.Abs(transform.position.x) > _xLimit)
@@ -36,13 +40,6 @@ public class RoadEnemy : EnemyBase
             transform.DOKill();
             ReturnToPool();
         }
-    }
-    
-    public void SetPool(CustomPool<RoadEnemy> pool)
-    {
-        _pool = pool;
-
-        CancelInvoke();
     }
 
     private void ReturnToPool()
